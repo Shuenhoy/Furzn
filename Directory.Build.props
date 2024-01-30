@@ -3,5 +3,7 @@
         <BaseOutputPath>..\..\bld\bin\$(MSBuildProjectName)\</BaseOutputPath>
         <BaseIntermediateOutputPath>..\..\bld\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
         <OutDir>..\..\bld\out</OutDir>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
 </Project>
