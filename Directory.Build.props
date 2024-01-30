@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <BaseOutputPath>..\..\bld\bin\$(MSBuildProjectName)\</BaseOutputPath>
+        <BaseIntermediateOutputPath>..\..\bld\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+        <OutDir>..\..\bld\out</OutDir>
+    </PropertyGroup>
+</Project>
