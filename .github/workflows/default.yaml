@@ -6,6 +6,7 @@ on:
       - main
 env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  DOTNET_CONSOLE_ANSI_COLOR: true
 
 jobs:
   build:
@@ -20,5 +21,5 @@ jobs:
           cache: true
           cache-dependency-path: "**/packages.lock.json"
       - run: dotnet restore --locked-mode
-      - run: dotnet build --configuration Release
-      - run: dotnet test --configuration Release
+      - run: dotnet build --configuration Release --no-restore
+      - run: dotnet test --configuration Release --no-restore
