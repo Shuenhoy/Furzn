@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
