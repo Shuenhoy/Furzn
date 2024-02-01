@@ -17,6 +17,8 @@ module Operations =
             member __.Item
                 with get (index: int) = a[index] + b[index]
 
+    let inline vecadd a b : VectorExpression<_, _> = { unwrap = VecAdd(a, b) }
+
     [<Struct>]
     type ScalarVecMul<'Scalar, 'A
         when 'Scalar :> INumberBase<'Scalar> and 'A :> IVectorExpression<'A, 'Scalar>>
@@ -27,11 +29,14 @@ module Operations =
             member __.Item
                 with get (index: int) = a[index] * b
 
+    let inline scalvecmul a b : VectorExpression<_, _> = { unwrap = ScalarVecMul(a, b) }
+
     [<Struct>]
     type MatVecMul<'Scalar, 'A, 'B
         when 'Scalar :> INumberBase<'Scalar>
         and 'A :> IMatrixExpression<'A, 'Scalar>
-        and 'B :> IVectorExpression<'B, 'Scalar>>(a: 'A, b: VectorExpression<'B, 'Scalar>) =
+        and 'B :> IVectorExpression<'B, 'Scalar>>
+        (a: MatrixExpression<'A, 'Scalar>, b: VectorExpression<'B, 'Scalar>) =
         interface IVectorExpression<MatVecMul<'Scalar, 'A, 'B>, 'Scalar> with
             member __.Rows = a.Rows
 
@@ -44,19 +49,18 @@ module Operations =
 
                     sum
 
+    let inline matvecmul a b : VectorExpression<_, _> = { unwrap = MatVecMul(a, b) }
 
     [<Struct>]
     type AddHelper =
         | AddHelper
 
-        static member inline vecadd a b = { unwrap = VecAdd(a, b) }
 
-        static member inline (?<-)(AddHelper, a, b) = AddHelper.vecadd a b
-        static member inline (?<-)(AddHelper, a: VectorX<_>, b) = AddHelper.vecadd a.V b
-        static member inline (?<-)(AddHelper, a, b: VectorX<_>) = AddHelper.vecadd a b.V
+        static member inline (?<-)(AddHelper, a, b) = vecadd a b
+        static member inline (?<-)(AddHelper, a: VectorX<_>, b) = vecadd a.V b
+        static member inline (?<-)(AddHelper, a, b: VectorX<_>) = vecadd a b.V
 
-        static member inline (?<-)(AddHelper, a: VectorX<_>, b: VectorX<_>) =
-            AddHelper.vecadd a.V b.V
+        static member inline (?<-)(AddHelper, a: VectorX<_>, b: VectorX<_>) = vecadd a.V b.V
 
 
 
@@ -64,27 +68,22 @@ module Operations =
 
     let inline (+) a b = (?<-) AddHelper a b
 
-    [<Struct>]
-    type LeftMulTag = | LeftMulTag
-
-    [<Struct>]
-    type RightMulTag = | RightMulTag
 
 
     [<Struct>]
     type MulHelper =
         | MulHelper
 
-        static member inline (?<-)(MulHelper, a, b) = { unwrap = MatVecMul(a, b) }
+        static member inline (?<-)(MulHelper, a, b) = matvecmul a b
 
-        static member inline (?<-)(MulHelper, a, b) = { unwrap = ScalarVecMul(a, b) }
-        static member inline (?<-)(MulHelper, a, b) = { unwrap = ScalarVecMul(b, a) }
+        static member inline (?<-)(MulHelper, a, b) = scalvecmul a b
+        static member inline (?<-)(MulHelper, a, b) = scalvecmul b a
 
-        static member inline (?<-)(MulHelper, a: VectorX<_>, b) = { unwrap = ScalarVecMul(b, a.V) }
+        static member inline (?<-)(MulHelper, a: VectorX<_>, b) = scalvecmul b a.V
 
-        static member inline (?<-)(MulHelper, a, b: VectorX<_>) = { unwrap = ScalarVecMul(a, b.V) }
+        static member inline (?<-)(MulHelper, a, b: VectorX<_>) = scalvecmul a b.V
 
-        static member inline (?<-)(MulHelper, a, b: VectorX<_>) = { unwrap = MatVecMul(a, b.V) }
+        static member inline (?<-)(MulHelper, a, b: VectorX<_>) = matvecmul a b.V
 
         static member inline (?<-)(MulHelper, a, b) = a * b
 

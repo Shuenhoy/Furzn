@@ -24,7 +24,7 @@ module Owned =
             and get (index: int) = uncheckedIndex buffer.Span index
 
         static member (!!)(this: VectorX<'Scalar>) = this.V
-        member this.V = { unwrap = this }
+        member this.V: VectorExpression<_, _> = { unwrap = this }
 
         member __.at
             with set (index: int) (value: 'Scalar) = buffer.Span[index] <- value
@@ -47,6 +47,8 @@ module Owned =
             with set (row: int, col: int) (value: 'Scalar) =
                 buffer.Span[(row * cols + col)] <- value
             and get (row: int, col: int) = buffer.Span[row * cols + col]
+
+        member this.M: MatrixExpression<_, _> = { unwrap = this }
 
         interface IDisposable with
             member __.Dispose() = buffer.Dispose()

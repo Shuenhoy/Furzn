@@ -28,3 +28,15 @@ module Traits =
         abstract member Rows: int
         abstract member Cols: int
         abstract member Item: int * int -> 'Scalar with get
+
+    [<Struct>]
+    type MatrixExpression<'Self, 'Scalar
+        when 'Scalar :> INumberBase<'Scalar> and 'Self :> IMatrixExpression<'Self, 'Scalar>> = {
+        unwrap: 'Self
+    } with
+
+        member inline __.Rows = __.unwrap.Rows
+        member inline __.Cols = __.unwrap.Cols
+
+        member inline __.Item
+            with inline get (row: int, col: int) = __.unwrap.Item(row, col)
