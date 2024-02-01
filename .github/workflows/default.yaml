@@ -7,6 +7,7 @@ on:
 env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   DOTNET_CONSOLE_ANSI_COLOR: true
+  DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
 
 jobs:
   build:
@@ -14,12 +15,22 @@ jobs:
     steps:
       - name: Checkout
         uses: https://pub.ryon.ren/actions/checkout@v3
+      - name: Cache Dotnet Install
+        id: cache-dotnet-install
+        uses: https://pub.ryon.ren/actions/cache@v3
+        with:
+          path: ${{ env.DOTNET_INSTALL_DIR }}
+          key: dotnet-${{ runner.os }}-8.0.x
       - name: Setup Dotnet
+        if: steps.cache-dotnet-install.outputs.cache-hit != 'true'
         uses: https://pub.ryon.ren/actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
           cache: true
           cache-dependency-path: "**/packages.lock.json"
-      - run: dotnet restore --locked-mode
+      - name: Set PATH
+        run: |
+          echo "::add-path::${{ env.DOTNET_INSTALL_DIR }}"
+      - run: dotnet restore --locked-mode -s https://nuget.cdn.azure.cn/v3/index.json
       - run: dotnet build --configuration Release --no-restore
       - run: dotnet test --configuration Release --no-restore
