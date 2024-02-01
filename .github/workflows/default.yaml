@@ -21,13 +21,16 @@ jobs:
         with:
           path: ${{ env.DOTNET_INSTALL_DIR }}
           key: dotnet-${{ runner.os }}-8.0.x
+      - name: Cache Nuget Packages
+        uses: https://pub.ryon.ren/actions/cache@v3
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
       - name: Setup Dotnet
         if: steps.cache-dotnet-install.outputs.cache-hit != 'true'
         uses: https://pub.ryon.ren/actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-          cache: true
-          cache-dependency-path: "**/packages.lock.json"
       - name: Set PATH
         run: |
           echo "::add-path::${{ env.DOTNET_INSTALL_DIR }}"
