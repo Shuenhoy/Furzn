@@ -6,7 +6,7 @@
   <ItemGroup>
     <Compile Include="Traits.fs" />
     <Compile Include="Owned.fs" />
-    <Compile Include="Operations.fs" />
+    <!-- <Compile Include="Operations.fs" /> -->
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />

@@ -1,40 +1,57 @@
 namespace Furzn.Core
 
 open System.Numerics
+open System.Runtime.CompilerServices
+
 
 [<AutoOpen>]
 module Traits =
+
     [<Interface>]
-    type IVectorExpression<'Self, 'Scalar
-        when 'Scalar :> INumberBase<'Scalar> and 'Self :> IVectorExpression<'Self, 'Scalar>> =
-        abstract member Rows: int
-        abstract member Item: int -> 'Scalar with get
+    type IDim<'Self when IDim<'Self>> =
+        abstract member Dim: int
 
     [<Struct>]
-    type VectorExpression<'Self, 'Scalar
-        when 'Scalar :> INumberBase<'Scalar> and 'Self :> IVectorExpression<'Self, 'Scalar>> =
-        | VecExp of 'Self
+    type D1 =
+        interface IDim<D1> with
+            member _.Dim = 1
 
-        member inline __.unwrap =
-            match __ with
-            | VecExp x -> x
+    [<Struct>]
+    type D2 =
+        interface IDim<D2> with
+            member _.Dim = 2
 
-        member inline __.Rows = __.unwrap.Rows
+    [<Struct>]
+    type D3 =
+        interface IDim<D3> with
+            member _.Dim = 3
 
-        member inline __.Item
-            with inline get (index: int) = __.unwrap.Item index
+    [<Struct>]
+    type D4 =
+        interface IDim<D4> with
+            member _.Dim = 4
 
+    [<Struct>]
+    type DX(dim: int) =
+        interface IDim<DX> with
+            member _.Dim = dim
 
     [<Interface>]
-    type IMatrixExpression<'Self, 'Scalar
-        when 'Scalar :> INumberBase<'Scalar> and 'Self :> IMatrixExpression<'Self, 'Scalar>> =
+    type IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
+        when IDim<'Rows>
+        and IDim<'Cols>
+        and INumberBase<'Scalar>
+        and IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols>> =
         abstract member Rows: int
         abstract member Cols: int
         abstract member Item: int * int -> 'Scalar with get
 
     [<Struct>]
-    type MatrixExpression<'Self, 'Scalar
-        when 'Scalar :> INumberBase<'Scalar> and 'Self :> IMatrixExpression<'Self, 'Scalar>> =
+    type MatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols>> =
         | MatExp of 'Self
 
         member inline __.unwrap =
@@ -44,9 +61,9 @@ module Traits =
         member inline __.Rows = __.unwrap.Rows
         member inline __.Cols = __.unwrap.Cols
 
-        member inline __.Item
-            with inline get (row: int, col: int) = __.unwrap.Item(row, col)
+        member __.Item
+            with get (row: int, col: int) = __.unwrap[row, col]
 
-    type Scalar<'Scalar when 'Scalar :> INumberBase<'Scalar>> = 'Scalar
-    type Vector<'V, 'S when Scalar<'S> and 'V :> IVectorExpression<'V, 'S>> = 'V
-    type Matrix<'M, 'S when Scalar<'S> and 'M :> IMatrixExpression<'M, 'S>> = 'M
+    type IVectorExpression<'Self, 'Scalar, 'Rows
+        when IDim<'Rows> and INumberBase<'Scalar> and IVectorExpression<'Self, 'Scalar, 'Rows>> =
+        IMatrixExpression<'Self, 'Scalar, 'Rows, D1>

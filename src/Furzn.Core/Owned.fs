@@ -8,54 +8,65 @@ open System.Runtime.InteropServices
 
 [<AutoOpen>]
 module Owned =
-    let inline private uncheckedIndex (mem: Span<'T>) (index: int) =
+    let inline private uncheckedIndexRef (mem: Span<'T>) (index: int) =
         let memRef = &MemoryMarshal.GetReference<'T>(mem)
-        Unsafe.Add<'T>(&memRef, index)
+        &Unsafe.Add<'T>(&memRef, index)
 
-    let inline private uncheckedIndexSet (mem: Span<'T>) (index: int) (value: 'T) =
-        let memRef = &MemoryMarshal.GetReference<'T>(mem)
-        Unsafe.Add<'T>(&memRef, index) <- value
 
-    type VectorX<'Scalar when 'Scalar :> INumberBase<'Scalar> and 'Scalar: unmanaged>(rows: int) =
-        let buffer = MemoryOwner<'Scalar>.Allocate(rows)
+    type Matrix<'Scalar, 'Rows, 'Cols when IDim<'Rows> and IDim<'Cols> and INumberBase<'Scalar>>
+        (rows: 'Rows, cols: 'Cols) =
+        let buffer = MemoryOwner<'Scalar>.Allocate(rows.Dim * cols.Dim)
 
-        member __.Item
-            with set (index: int) (value: 'Scalar) = uncheckedIndexSet buffer.Span index value
-            and get (index: int) = uncheckedIndex buffer.Span index
+        member self.AtRef(row: int, col: int) =
+#if DEBUG
+            &buffer.Span[(row * cols.Dim) + col]
+#else
+            self.CoeffRef(row, col)
+#endif
 
-        static member (!!)(this: VectorX<'Scalar>) = this.V
-        member this.V = VecExp this
+        member __.CoeffRef(row: int, col: int) =
+            &uncheckedIndexRef buffer.Span (row * cols.Dim + col)
 
-        member __.at
-            with set (index: int) (value: 'Scalar) = buffer.Span[index] <- value
-            and get (index: int) = buffer.Span[index]
-
-        interface IDisposable with
-            member __.Dispose() = buffer.Dispose()
-
-        interface IVectorExpression<VectorX<'Scalar>, 'Scalar> with
-            member __.Rows = rows
-
-            member this.Item
-                with get (index: int) = this[index]
-
-    type MatrixX<'Scalar when 'Scalar :> INumberBase<'Scalar> and 'Scalar: unmanaged>
-        (rows: int, cols: int) =
-        let buffer = MemoryOwner<'Scalar>.Allocate(rows * cols)
-
-        member __.Item
-            with set (row: int, col: int) (value: 'Scalar) =
-                buffer.Span[(row * cols + col)] <- value
-            and get (row: int, col: int) = buffer.Span[row * cols + col]
-
+        member __.Rows = rows.Dim
+        member __.Cols = cols.Dim
         member this.M = MatExp this
 
         interface IDisposable with
             member __.Dispose() = buffer.Dispose()
 
-        interface IMatrixExpression<MatrixX<'Scalar>, 'Scalar> with
-            member __.Rows = rows
-            member __.Cols = cols
+        interface IMatrixExpression<Matrix<'Scalar, 'Rows, 'Cols>, 'Scalar, 'Rows, 'Cols> with
+            member self.Rows = self.Rows
+            member self.Cols = self.Cols
 
             member this.Item
-                with get (row: int, col: int) = this[row, col]
+                with get (row: int, col: int) = this.AtRef(row, col)
+
+    type Vector<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
+        Matrix<'Scalar, 'Rows, D1>
+
+    [<Extension>]
+    type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
+        [<Extension>]
+        static member Item(vec: Matrix<'Scalar, 'Rows, D2>, r: int, c: int) = &vec.AtRef(r, c)
+
+        [<Extension>]
+        static member Item(vec: Matrix<'Scalar, 'Rows, D3>, r: int, c: int) = &vec.AtRef(r, c)
+
+        [<Extension>]
+        static member Item(vec: Matrix<'Scalar, 'Rows, D4>, r: int, c: int) = &vec.AtRef(r, c)
+
+        [<Extension>]
+        static member Item(vec: Matrix<'Scalar, 'Rows, DX>, r: int, c: int) = &vec.AtRef(r, c)
+
+
+    [<Extension>]
+    type VectorExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
+        [<Extension>]
+        static member Item(vec: Vector<'Scalar, 'Rows>, index: int) = &vec.AtRef(index, 0)
+
+
+    let vectorX<'Scalar when INumberBase<'Scalar>> (dim: int) =
+        new Vector<'Scalar, DX>(DX dim, D1())
+
+    let matrixX<'Scalar when INumberBase<'Scalar>> (rows: int) (cols: int) =
+        new Matrix<'Scalar, DX, DX>(DX rows, DX cols)
