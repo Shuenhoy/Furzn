@@ -7,34 +7,6 @@ open System.Runtime.CompilerServices
 [<AutoOpen>]
 module Traits =
 
-    [<Interface>]
-    type IDim<'Self when IDim<'Self>> =
-        abstract member Dim: int
-
-    [<Struct>]
-    type D1 =
-        interface IDim<D1> with
-            member _.Dim = 1
-
-    [<Struct>]
-    type D2 =
-        interface IDim<D2> with
-            member _.Dim = 2
-
-    [<Struct>]
-    type D3 =
-        interface IDim<D3> with
-            member _.Dim = 3
-
-    [<Struct>]
-    type D4 =
-        interface IDim<D4> with
-            member _.Dim = 4
-
-    [<Struct>]
-    type DX(dim: int) =
-        interface IDim<DX> with
-            member _.Dim = dim
 
     [<Interface>]
     type IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
@@ -42,9 +14,9 @@ module Traits =
         and IDim<'Cols>
         and INumberBase<'Scalar>
         and IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols>> =
-        abstract member Rows: int
-        abstract member Cols: int
-        abstract member Item: int * int -> 'Scalar with get
+        abstract member DimRows: 'Rows
+        abstract member DimCols: 'Cols
+        abstract member At: int * int -> 'Scalar
 
     [<Struct>]
     type MatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
@@ -58,11 +30,12 @@ module Traits =
             match __ with
             | MatExp x -> x
 
-        member inline __.Rows = __.unwrap.Rows
-        member inline __.Cols = __.unwrap.Cols
+        member inline __.DimRows = __.unwrap.DimRows
+        member inline __.DimCols = __.unwrap.DimCols
+        member inline __.Rows = __.unwrap.DimRows.Dim
+        member inline __.Cols = __.unwrap.DimCols.Dim
 
-        member __.Item
-            with get (row: int, col: int) = __.unwrap[row, col]
+        member __.At(row: int, col: int) = __.unwrap.At(row, col)
 
     type IVectorExpression<'Self, 'Scalar, 'Rows
         when IDim<'Rows> and INumberBase<'Scalar> and IVectorExpression<'Self, 'Scalar, 'Rows>> =

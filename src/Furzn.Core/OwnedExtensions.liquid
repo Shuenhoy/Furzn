@@ -1,0 +1,59 @@
+namespace Furzn.Core
+
+open System.Runtime.CompilerServices
+open System.Numerics
+
+[<Extension>]
+type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
+    [<Extension>]
+    static member Item(mat: Matrix<'Scalar, 'Rows, D1>, r: int) = &mat.AtRef(r, 0)
+    [<Extension>]
+    static member Coeff(mat: Matrix<'Scalar, 'Rows, D1>, r: int) = &mat.CoeffRef(r, 0)
+    [<Extension>]
+    static member inline SetSlice
+            (
+                mat: Matrix<'Scalar, 'Rows, D1>,
+                startR: option<int>,
+                endR: option<int>,
+                m: MatrixExpression<_, 'Scalar, 'Rows, D1>
+            ) =
+            mat.AssignSlice (startR, endR, None, None, m)
+
+    {% for dim in dims %}
+        {% if dim != '1' %}    
+    [<Extension>]
+    static member Item(mat: Matrix<'Scalar, 'Rows, D{{dim}}>, r: int, c: int) = &mat.AtRef(r, c)
+    
+    [<Extension>]
+    static member Coeff(mat: Matrix<'Scalar, 'Rows, D{{dim}}>, r: int, c: int) = &mat.CoeffRef(r, c)
+    
+    [<Extension>]
+    static member inline SetSlice
+        (
+            mat: Matrix<'Scalar, 'Rows, D{{dim}}>,
+            startR: option<int>,
+            endR: option<int>,
+            startC: option<int>,
+            endC: option<int>,
+            m: MatrixExpression<_, 'Scalar, 'Rows, D{{dim}}>
+        ) =
+            mat.AssignSlice (startR, endR, startC, endC, m)
+
+        {% endif %}
+    {% endfor %}
+
+    [<Extension>]
+    static member Item(mat: Matrix<'Scalar, 'Rows, DX>, r: int, c: int) = &mat.AtRef(r, c)
+    [<Extension>]
+    static member Coeff(mat: Matrix<'Scalar, 'Rows, DX>, r: int, c: int) = &mat.CoeffRef(r, c)
+    [<Extension>]
+    static member inline SetSlice
+            (
+                mat: Matrix<'Scalar, 'Rows, DX>,
+                startR: option<int>,
+                endR: option<int>,
+                startC: option<int>,
+                endC: option<int>,
+                m: MatrixExpression<_, 'Scalar, 'Rows, DX>
+            ) =
+            mat.AssignSlice (startR, endR, startC, endC, m)

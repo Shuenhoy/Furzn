@@ -1,0 +1,22 @@
+namespace Furzn.Core
+
+
+    
+
+[<Interface>]
+type IDim<'Self when IDim<'Self>> =
+    abstract member Dim: int
+
+
+{% for dim in dims %}
+[<Struct>]
+type D{{dim}} =
+    interface IDim<D{{dim}}> with
+        member _.Dim = {{dim}}
+{% endfor %}
+
+
+[<Struct>]
+type DX(dim: int) =
+    interface IDim<DX> with
+        member _.Dim = dim

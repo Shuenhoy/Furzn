@@ -7,115 +7,81 @@ open System.Runtime.CompilerServices
 [<AutoOpen>]
 module Operations =
 
-    type BinaryOp<'Scalar when 'Scalar :> INumberBase<'Scalar>> =
+    type BinaryOp<'Scalar when INumberBase<'Scalar>> =
         static abstract member Apply: 'Scalar -> 'Scalar -> 'Scalar
 
-    type Addition<'Scalar when 'Scalar :> INumberBase<'Scalar>> =
+    type Addition<'Scalar when INumberBase<'Scalar>> =
         interface BinaryOp<'Scalar> with
             [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
             static member Apply a b = a + b
 
-    type Subtraction<'Scalar when 'Scalar :> INumberBase<'Scalar>> =
+    type Subtraction<'Scalar when INumberBase<'Scalar>> =
         interface BinaryOp<'Scalar> with
             [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
             static member Apply a b = a - b
 
 
     [<Struct>]
-    type VecVecCwiseBinaryOp<'Scalar, 'A, 'B, 'Op
-        when 'Scalar :> INumberBase<'Scalar>
-        and 'A :> IVectorExpression<'A, 'Scalar>
-        and 'B :> IVectorExpression<'B, 'Scalar>
+    type CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, 'Op
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'A, 'Scalar, 'Rows, 'Cols>
+        and IMatrixExpression<'B, 'Scalar, 'Rows, 'Cols>
         and 'Op :> BinaryOp<'Scalar>>
-        (a: VectorExpression<'A, 'Scalar>, b: VectorExpression<'B, 'Scalar>) =
-        static member inline create a b =
-            VecExp <| VecVecCwiseBinaryOp(a, b): VectorExpression<_, _>
+        (
+            a: MatrixExpression<'A, 'Scalar, 'Rows, 'Cols>,
+            b: MatrixExpression<'B, 'Scalar, 'Rows, 'Cols>
+        ) =
+        static member inline create a b = MatExp <| CwiseBinaryOp(a, b)
 
-        interface IVectorExpression<VecVecCwiseBinaryOp<'Scalar, 'A, 'B, 'Op>, 'Scalar> with
-            member __.Rows = a.Rows
+        interface IMatrixExpression<CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, 'Op>, 'Scalar, 'Rows, 'Cols> with
+            member __.DimRows = a.DimRows
+            member __.DimCols = a.DimCols
 
-            member __.Item
-                with get (index: int) = 'Op.Apply a[index] b[index]
+            member __.At(row: int, col: int) =
+                'Op.Apply (a.At(row, col)) (b.At(row, col))
 
-    [<Struct>]
-    type VecScalarCwiseBinaryOp<'Scalar, 'A, 'Op
-        when 'Scalar :> INumberBase<'Scalar>
-        and 'A :> IVectorExpression<'A, 'Scalar>
-        and 'Op :> BinaryOp<'Scalar>>(a: VectorExpression<'A, 'Scalar>, b: 'Scalar) =
-        static member inline create a b =
-            VecExp <| VecScalarCwiseBinaryOp(a, b): VectorExpression<_, _>
-
-        interface IVectorExpression<VecScalarCwiseBinaryOp<'Scalar, 'A, 'Op>, 'Scalar> with
-            member __.Rows = a.Rows
-
-            member __.Item
-                with get (index: int) = 'Op.Apply a[index] b
+    type MatAdd<'Scalar, 'A, 'B, 'Rows, 'Cols
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'A, 'Scalar, 'Rows, 'Cols>
+        and IMatrixExpression<'B, 'Scalar, 'Rows, 'Cols>> =
+        CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, Addition<'Scalar>>
 
     [<Struct>]
-    type MatMatCwiseBinaryOp<'Scalar, 'A, 'B, 'Op
-        when 'Scalar :> INumberBase<'Scalar>
-        and 'A :> IMatrixExpression<'A, 'Scalar>
-        and 'B :> IMatrixExpression<'B, 'Scalar>
-        and 'Op :> BinaryOp<'Scalar>>
-        (a: MatrixExpression<'A, 'Scalar>, b: MatrixExpression<'B, 'Scalar>) =
-        static member inline create a b =
-            MatExp <| MatMatCwiseBinaryOp(a, b): MatrixExpression<_, _>
+    type ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, 'Op
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'M, 'Scalar, 'Rows, 'Cols>
+        and 'Op :> BinaryOp<'Scalar>>(m: MatrixExpression<'M, 'Scalar, 'Rows, 'Cols>, s: 'Scalar) =
+        static member inline create m s = MatExp <| ScalarCwiseOp(m, s)
 
-        interface IMatrixExpression<MatMatCwiseBinaryOp<'Scalar, 'A, 'B, 'Op>, 'Scalar> with
-            member __.Rows = a.Rows
-            member __.Cols = a.Cols
+        interface IMatrixExpression<ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, 'Op>, 'Scalar, 'Rows, 'Cols> with
+            member __.DimRows = m.DimRows
+            member __.DimCols = m.DimCols
 
-            member __.Item
-                with get (row: int, col: int) = 'Op.Apply a[row, col] b[row, col]
+            member __.At(row: int, col: int) = 'Op.Apply (m.At(row, col)) s
 
-
-    type VecAdd<'Scalar, 'A, 'B when Scalar<'Scalar> and Vector<'A, 'Scalar> and Vector<'B, 'Scalar>>
-        = VecVecCwiseBinaryOp<'Scalar, 'A, 'B, Addition<'Scalar>>
-
-    type VecSub<'Scalar, 'A, 'B when Scalar<'Scalar> and Vector<'A, 'Scalar> and Vector<'B, 'Scalar>>
-        = VecVecCwiseBinaryOp<'Scalar, 'A, 'B, Subtraction<'Scalar>>
-
-    type MatAdd<'Scalar, 'A, 'B when Scalar<'Scalar> and Matrix<'A, 'Scalar> and Matrix<'B, 'Scalar>>
-        = MatMatCwiseBinaryOp<'Scalar, 'A, 'B, Addition<'Scalar>>
-
-    type MatSub<'Scalar, 'A, 'B when Scalar<'Scalar> and Matrix<'A, 'Scalar> and Matrix<'B, 'Scalar>>
-        = MatMatCwiseBinaryOp<'Scalar, 'A, 'B, Subtraction<'Scalar>>
-
-    type VecScalarMul<'Scalar, 'A when Scalar<'Scalar> and Vector<'A, 'Scalar>> =
-        VecScalarCwiseBinaryOp<'Scalar, 'A, Addition<'Scalar>>
-
-    [<Struct>]
-    type MatVecMul<'Scalar, 'A, 'B
-        when 'Scalar :> INumberBase<'Scalar>
-        and 'A :> IMatrixExpression<'A, 'Scalar>
-        and 'B :> IVectorExpression<'B, 'Scalar>>
-        (a: MatrixExpression<'A, 'Scalar>, b: VectorExpression<'B, 'Scalar>) =
-        interface IVectorExpression<MatVecMul<'Scalar, 'A, 'B>, 'Scalar> with
-            member __.Rows = a.Rows
-
-            member __.Item
-                with get (index: int) =
-                    let mutable sum: 'Scalar = LanguagePrimitives.GenericZero
-
-                    for i in 0 .. a.Cols - 1 do
-                        sum <- sum + a[index, i] * b[i]
-
-                    sum
-
-    let inline matvecmul a b = VecExp <| MatVecMul(a, b)
-
+    type MatScalarMul<'Scalar, 'M, 'Rows, 'Cols
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'M, 'Scalar, 'Rows, 'Cols>> =
+        ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, Addition<'Scalar>>
 
     [<Struct>]
     type AddHelper =
         | AddHelper
 
+        static member inline (?<-)(AddHelper, a, b) = MatExp <| MatAdd(a, b)
+        static member inline (?<-)(AddHelper, a: Matrix<_, _, _>, b) = MatExp <| MatAdd(a.M, b)
+        static member inline (?<-)(AddHelper, a, b: Matrix<_, _, _>) = MatExp <| MatAdd(a, b.M)
 
-        static member inline (?<-)(AddHelper, a, b) = VecExp <| VecAdd(a, b)
-        static member inline (?<-)(AddHelper, a: VectorX<_>, b) = VecExp <| VecAdd(a.V, b)
-        static member inline (?<-)(AddHelper, a, b: VectorX<_>) = VecExp <| VecAdd(a, b.V)
-
-        static member inline (?<-)(AddHelper, a: VectorX<_>, b: VectorX<_>) =
-            VecExp <| VecAdd(a.V, b.V)
+        static member inline (?<-)(AddHelper, a: Matrix<_, _, _>, b: Matrix<_, _, _>) =
+            MatExp <| MatAdd(a.M, b.M)
 
         static member inline (?<-)(AddHelper, a, b) = a + b
 
@@ -127,12 +93,15 @@ module Operations =
     type MulHelper =
         | MulHelper
 
-        static member inline (?<-)(MulHelper, a, b) = matvecmul a b
-        static member inline (?<-)(MulHelper, a, b) = VecExp <| VecScalarMul(a, b)
-        static member inline (?<-)(MulHelper, a, b) = VecExp <| VecScalarMul(b, a)
-        static member inline (?<-)(MulHelper, a: VectorX<_>, b) = VecExp <| VecScalarMul(a.V, b)
-        static member inline (?<-)(MulHelper, a, b: VectorX<_>) = VecExp <| VecScalarMul(b.V, a)
-        static member inline (?<-)(MulHelper, a, b: VectorX<_>) = matvecmul a b.V
+        static member inline (?<-)(MulHelper, a, b) = MatExp <| MatScalarMul(a, b)
+        static member inline (?<-)(MulHelper, a, b) = MatExp <| MatScalarMul(b, a)
+
+        static member inline (?<-)(MulHelper, a: Matrix<_, _, _>, b) =
+            MatExp <| MatScalarMul(a.M, b)
+
+        static member inline (?<-)(MulHelper, a, b: Matrix<_, _, _>) =
+            MatExp <| MatScalarMul(b.M, a)
+
         static member inline (?<-)(MulHelper, a, b) = a * b
 
 
