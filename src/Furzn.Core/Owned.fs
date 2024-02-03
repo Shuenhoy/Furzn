@@ -44,8 +44,8 @@ module Owned =
                 endC: int,
                 m: MatrixExpression<_, 'Scalar, 'Rows, 'Cols>
             ) =
-            for r in startR .. endR - 1 do
-                for c in startC .. endC - 1 do
+            for r in startR..endR do
+                for c in startC..endC do
                     this.AtRef(r, c) <- m.At(r - startR, c - startC)
 
         member inline this.AssignSlice
@@ -67,7 +67,20 @@ module Owned =
             let endC = dft endC <| this.Cols - 1
             this.AssignSlice(startR, endR, startC, endC, m)
 
+        override this.ToString() =
+            let sb = Text.StringBuilder()
 
+            sb.Append(sprintf "Matrix<%A, %A, %A>\n" typeof<'Scalar>.Name rows.Dim cols.Dim)
+            |> ignore
+
+            for r in 0 .. rows.Dim - 1 do
+                for c in 0 .. cols.Dim - 1 do
+                    sb.Append(sprintf "%A" <| this.AtRef(r, c)) |> ignore
+                    sb.Append(" ") |> ignore
+
+                sb.AppendLine() |> ignore
+
+            sb.ToString()
 
         interface IDisposable with
             member __.Dispose() = buffer.Dispose()
