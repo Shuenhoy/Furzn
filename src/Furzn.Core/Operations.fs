@@ -20,6 +20,15 @@ module Operations =
             [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
             static member Apply a b = a - b
 
+    type Multiplication<'Scalar when INumberBase<'Scalar>> =
+        interface BinaryOp<'Scalar> with
+            [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+            static member Apply a b = a * b
+
+    type Division<'Scalar when INumberBase<'Scalar>> =
+        interface BinaryOp<'Scalar> with
+            [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+            static member Apply a b = a / b
 
     [<Struct>]
     type CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, 'Op
@@ -50,6 +59,14 @@ module Operations =
         and IMatrixExpression<'B, 'Scalar, 'Rows, 'Cols>> =
         CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, Addition<'Scalar>>
 
+    type MatSub<'Scalar, 'A, 'B, 'Rows, 'Cols
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'A, 'Scalar, 'Rows, 'Cols>
+        and IMatrixExpression<'B, 'Scalar, 'Rows, 'Cols>> =
+        CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, Subtraction<'Scalar>>
+
     [<Struct>]
     type ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, 'Op
         when INumberBase<'Scalar>
@@ -70,7 +87,14 @@ module Operations =
         and IDim<'Rows>
         and IDim<'Cols>
         and IMatrixExpression<'M, 'Scalar, 'Rows, 'Cols>> =
-        ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, Addition<'Scalar>>
+        ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, Multiplication<'Scalar>>
+
+    type MatScalarDiv<'Scalar, 'M, 'Rows, 'Cols
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'M, 'Scalar, 'Rows, 'Cols>> =
+        ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, Division<'Scalar>>
 
     [<Struct>]
     type AddHelper =
@@ -87,7 +111,20 @@ module Operations =
 
     let inline (+) a b = (?<-) AddHelper a b
 
+    [<Struct>]
+    type SubHelper =
+        | SubHelper
 
+        static member inline (?<-)(SubHelper, a, b) = MatExp <| MatSub(a, b)
+        static member inline (?<-)(SubHelper, a: Matrix<_, _, _>, b) = MatExp <| MatSub(a.M, b)
+        static member inline (?<-)(SubHelper, a, b: Matrix<_, _, _>) = MatExp <| MatSub(a, b.M)
+
+        static member inline (?<-)(SubHelper, a: Matrix<_, _, _>, b: Matrix<_, _, _>) =
+            MatExp <| MatSub(a.M, b.M)
+
+        static member inline (?<-)(SubHelper, a, b) = a - b
+
+    let inline (-) a b = (?<-) SubHelper a b
 
     [<Struct>]
     type MulHelper =
@@ -104,6 +141,18 @@ module Operations =
 
         static member inline (?<-)(MulHelper, a, b) = a * b
 
-
-
     let inline (*) a b = (?<-) MulHelper a b
+
+    [<Struct>]
+    type DivHelper =
+        | DivHelper
+
+        static member inline (?<-)(DivHelper, a, b) = MatExp <| MatScalarDiv(a, b)
+
+        static member inline (?<-)(DivHelper, a: Matrix<_, _, _>, b) =
+            MatExp <| MatScalarDiv(a.M, b)
+
+
+        static member inline (?<-)(DivHelper, a, b) = a / b
+
+    let inline (/) a b = (?<-) DivHelper a b
