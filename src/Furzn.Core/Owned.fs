@@ -114,10 +114,6 @@ module Owned =
             ) =
             output.Assign a
 
-    let inline (!<) (a: MatrixExpression<_, _, _, _>) = a.Eval()
-    let inline (>->) (a: MatrixExpression<_, _, _, _>) (b: outref<Matrix<_, _, _>>) = a.EvalTo &b
-
-
     type Vector<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
         Matrix<'Scalar, 'Rows, D1>
 
