@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <TextTemplate Include="**\*.liquid" />
+  </ItemGroup>
+  <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">
+    <Exec WorkingDirectory="$(ProjectDir)"
+      Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.cs" />
+  </Target>
+  <ItemGroup>
+    <Generated Include="**\*.Generated.cs" />
+  </ItemGroup>
+  <Target Name="TextTemplateClean" AfterTargets="Clean">
+    <Delete Files="**\*.Generated.cs" />
+  </Target>
+
+</Project>

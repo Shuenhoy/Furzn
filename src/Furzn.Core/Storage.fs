@@ -5,6 +5,8 @@ open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System
 
+open Furzn.Low
+
 [<AutoOpen>]
 module Storage =
     let inline internal uncheckedIndexRef (mem: Span<'T>) (index: int) =
@@ -41,3 +43,18 @@ module Storage =
             member self.CoeffRef i = &self.CoeffRef i
             member self.Length = self.length
             static member Create l = new HeapStorage<_>(l)
+
+
+    [<Struct>]
+    type InlineStorage3<'Scalar> =
+        val mutable buffer: InlineArray3<'Scalar>
+        member self.AtRef i = &self.buffer.AtRef i
+        member self.CoeffRef i = &self.buffer.AtRef i
+
+        new(_) = { buffer = InlineArray3<_>() }
+
+        interface IStorage<InlineStorage3<'Scalar>, 'Scalar> with
+            member self.AtRef i = &self.AtRef i
+            member self.CoeffRef i = &self.CoeffRef i
+            member self.Length = 3
+            static member Create _ = new InlineStorage3<_>()

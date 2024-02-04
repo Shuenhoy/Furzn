@@ -40,7 +40,7 @@ module Owned =
             member this.At(row: int, col: int) = this.AtRef(row, col)
 
     [<Struct>]
-    type ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage
+    type ValueMatrixImpl<'Scalar, 'Rows, 'Cols, 'Storage
         when IDim<'Rows>
         and IDim<'Cols>
         and INumberBase<'Scalar>
@@ -61,9 +61,8 @@ module Owned =
 
         member self.Rows = self.rows.Dim
         member self.Cols = self.cols.Dim
-        member this.M = MatExp this
 
-        interface IMatrixTarget<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
+        interface IMatrixTarget<ValueMatrixImpl<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member self.DimRows = self.rows
             member self.DimCols = self.cols
 
@@ -71,9 +70,30 @@ module Owned =
 
             member self.CoeffRef(row: int, col: int) = &self.CoeffRef(row, col)
 
+    [<Struct>]
+    type ValueMatrixBase<'Self, 'Scalar, 'Rows, 'Cols
+        when IDim<'Rows>
+        and IDim<'Cols>
+        and INumberBase<'Scalar>
+        and IMatrixTarget<'Self, 'Scalar, 'Rows, 'Cols>
+        and 'Self: struct>(mat: 'Self) =
+        member this.M = MatExp this
 
-        interface IMatrixExpression<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
-            member self.DimRows = self.rows
-            member self.DimCols = self.cols
+        member self.AtRef(row: int, col: int) = &mat.AtRef(row, col)
+        member self.CoeffRef(row: int, col: int) = &mat.CoeffRef(row, col)
+        member self.DimRows = mat.DimRows
+        member self.DimCols = mat.DimCols
 
-            member this.At(row: int, col: int) = this.AtRef(row, col)
+        interface IMatrixTarget<ValueMatrixBase<'Self, 'Scalar, 'Rows, 'Cols>, 'Scalar, 'Rows, 'Cols> with
+            member __.DimRows = mat.DimRows
+            member __.DimCols = mat.DimCols
+
+            member __.AtRef(row: int, col: int) = &mat.AtRef(row, col)
+
+            member __.CoeffRef(row: int, col: int) = &mat.CoeffRef(row, col)
+
+        interface IMatrixExpression<ValueMatrixBase<'Self, 'Scalar, 'Rows, 'Cols>, 'Scalar, 'Rows, 'Cols> with
+            member __.DimRows = mat.DimRows
+            member __.DimCols = mat.DimCols
+
+            member __.At(row: int, col: int) = mat.AtRef(row, col)

@@ -1,0 +1,31 @@
+﻿namespace Furzn.Low;
+
+using System.Runtime.CompilerServices;
+
+{% for dim in dims %}
+[System.Runtime.CompilerServices.InlineArray({{dim}})]
+public struct InlineArray{{dim}}<T>
+{
+    internal T _element;
+}
+
+{% endfor %}
+
+
+
+public static class InlineArrayExtensions
+{
+{% for dim in dims %}
+    public static ref T AtRef<T>(ref this InlineArray{{dim}}<T> self,int index) {
+        #if DEBUG
+            return ref self[index];
+        #else
+            return ref Unsafe.Add(ref self._element, index);
+        #endif
+    }
+    public static ref T CoeffRef<T>(ref this InlineArray{{dim}}<T> self, int index) {
+        return ref Unsafe.Add(ref self._element, index);
+    }
+{% endfor %}
+    
+}

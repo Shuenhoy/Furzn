@@ -9,7 +9,7 @@ type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> 
     static member Item(mat: Matrix<'Scalar, 'Rows, D1>, r: int) = &mat.AtRef(r, 0)
    
     [<Extension>]
-    static member Coeff(mat: inref<Matrix<'Scalar, 'Rows, D1>>, r: int) = &mat.CoeffRef(r, 0)
+    static member Coeff(mat: Matrix<'Scalar, 'Rows, D1>, r: int) = &mat.CoeffRef(r, 0)
     
     [<Extension>]
     static member inline SetSlice
