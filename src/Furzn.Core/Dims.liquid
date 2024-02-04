@@ -7,14 +7,16 @@ namespace Furzn.Core
 type IDim<'Self when IDim<'Self>> =
     abstract member Dim: int
 
+[<Struct>]
+type D1 =
+    interface IDim<D1> with
+        member _.Dim = 1
 
 {% for dim in dims %}
-    {% if dim != 'X' %}    
 [<Struct>]
 type D{{dim}} =
     interface IDim<D{{dim}}> with
         member _.Dim = {{dim}}
-    {% endif %}
 {% endfor %}
 
 

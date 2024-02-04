@@ -1,59 +1,80 @@
-namespace Furzn.Core
-
-open System.Runtime.CompilerServices
-open System.Numerics
-
-// {{ "Hello {0} and {1}" | format: "world", 123 }}
-
-{% macro matAccess(name) %}
+{% macro matAccess(type) %}
     [<Extension>]
-    static member Item(mat: {{name}}, r: int, c: int) = &mat.AtRef(r, c)
+    static member Item(mat: {{type}}, r: int, c: int) = &mat.AtRef(r, c)
       
     [<Extension>]
-    static member Coeff(mat: {{name}}, r: int, c: int) = &mat.CoeffRef(r, c)
-      
+    static member Coeff(mat: {{type}}, r: int, c: int) = &mat.CoeffRef(r, c)
+{% endmacro %}
+
+{% macro matSetSlice(type, Rows, Cols) %}
     [<Extension>]
     static member inline SetSlice
         (
-            mat: {{name}},
+            mat: {{type}},
             startR: option<int>,
             endR: option<int>,
             startC: option<int>,
             endC: option<int>,
-            m: MatrixExpression<_, 'Scalar, 'Rows, D{{dim}}>
+            m: MatrixExpression<_, 'Scalar, {{Rows}}, {{Cols}}>
         ) =
             let mutable mat = mat            
             mat.AssignSlice (startR, endR, startC, endC, m)
 {% endmacro %}
 
-{% macro vecAccess(name) %}
+{% macro vecAccess(type) %}
     [<Extension>]
-    static member Item(vec: {{name}}, i: int) = &vec.AtRef(i, 0)
+    static member Item(vec: {{type}}, i: int) = &vec.AtRef(i, 0)
       
     [<Extension>]
-    static member Coeff(vec: {{name}}, i: int) = &vec.CoeffRef(i, 0)
+    static member Coeff(vec: {{type}}, i: int) = &vec.CoeffRef(i, 0)
+{% endmacro %}
+
+{% macro vecAccessConst(type) %}
+    [<Extension>]
+    static member Item(vec: {{type}}, i: int) = &vec.AtRefConst(i, 0)
       
+    [<Extension>]
+    static member Coeff(vec: {{type}}, i: int) = &vec.CoeffRefConst(i, 0)
+{% endmacro %}
+
+{% macro vecSlice(type, Rows) %}
     [<Extension>]
     static member inline SetSlice
         (
-            vec: {{name}},
+            vec: {{type}},
             startR: option<int>,
             endR: option<int>,
-            m: MatrixExpression<_, 'Scalar, 'Rows, D{{dim}}>
+            m: MatrixExpression<_, 'Scalar, {{Rows}}, D1>
         ) =
             let mutable vec = vec            
             vec.AssignSlice (startR, endR, None, None, m)
 {% endmacro %}
 
+namespace Furzn.Core
+
+open System.Runtime.CompilerServices
+open System.Numerics
+
+[<Extension>]
+type ValueVectorExtensions<'Scalar when INumberBase<'Scalar>> =
+    {% for dim in dims %}
+        {% assign type = "inref<ValueMatrixBase<'Scalar, D{0}, D1, _>>" | format: dim %} 
+        {% assign Rows = "D{0}" | format: dim %}
+        {{ vecAccess(type) }}   
+        {{ vecSlice(type,  Rows) }} 
+    {% endfor %}
 
 [<Extension>]
 type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
+    {{ vecAccess("Matrix<'Scalar, 'Rows, D1>") }}   
+    {{ vecSlice("Matrix<'Scalar, 'Rows, D1>", "'Rows") }} 
 
     {% for dim in dims %}
-        {% if dim != '1' %}    
-            {% assign name = "Matrix<'Scalar, 'Rows, D{0}>" | format: dim %} 
-            {{ matAccess(name) }}
-        {% else %}
-            {{ vecAccess("Matrix<'Scalar, 'Rows, D1>") }}    
-        {% endif %}
+        {% assign type = "Matrix<'Scalar, 'Rows, D{0}>" | format: dim %} 
+        {{ matAccess(type) }}
+        {% assign Cols = "D{0}" | format: dim %}
+        {{ matSetSlice(type, "'Rows", Cols) }}
     {% endfor %}
+
+    {{ matAccess("Matrix<'Scalar, 'Rows, DX>") }}
+    {{ matSetSlice("Matrix<'Scalar, 'Rows, DX>", "'Rows", "DX") }}

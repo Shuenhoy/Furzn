@@ -36,6 +36,8 @@ module AssignTarget =
                 for c in startC..endC do
                     self.AtRef(r, c) <- m.At(r - startR, c - startC)
 
+            &self
+
         [<Extension>]
         static member inline AssignSlice
             (

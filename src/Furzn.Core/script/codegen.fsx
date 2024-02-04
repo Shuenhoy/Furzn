@@ -13,7 +13,7 @@ let template = parse.Parse(source)
 let options = TemplateOptions()
 options.MemberAccessStrategy <- UnsafeMemberAccessStrategy.Instance
 
-let dims = [ "1"; "2"; "3"; "4"; "X" ]
+let dims = [ "2"; "3"; "4" ]
 let context = TemplateContext({| dims = dims |}, options)
 
 

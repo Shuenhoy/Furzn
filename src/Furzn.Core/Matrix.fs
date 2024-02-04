@@ -19,16 +19,8 @@ module Matrix =
         static member Item(vec: Vector<'Scalar, 'Rows>, index: int) = &vec.AtRef(index, 0)
 
 
-    type ValueMatrix<'Scalar, 'Rows, 'Cols, 'Storage
-        when IDim<'Rows>
-        and IDim<'Cols>
-        and INumberBase<'Scalar>
-        and IStorage<'Storage, 'Scalar>
-        and 'Storage: struct> =
-        ValueMatrixBase<ValueMatrixImpl<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols>
-
     type Vector3<'Scalar when INumberBase<'Scalar>> =
-        ValueMatrix<'Scalar, D3, D1, InlineStorage3<'Scalar>>
+        ValueMatrixBase<'Scalar, D3, D1, InlineStorage3<'Scalar>>
 
     let vectorX<'Scalar when INumberBase<'Scalar>> (dim: int) =
         new Vector<'Scalar, DX>(DX dim, D1())

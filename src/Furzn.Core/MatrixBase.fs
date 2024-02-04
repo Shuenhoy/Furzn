@@ -3,6 +3,8 @@ namespace Furzn.Core
 open System.Numerics
 open System
 
+open Furzn.Low
+
 [<AutoOpen>]
 module Owned =
 
@@ -39,8 +41,10 @@ module Owned =
 
             member this.At(row: int, col: int) = this.AtRef(row, col)
 
+
+
     [<Struct>]
-    type ValueMatrixImpl<'Scalar, 'Rows, 'Cols, 'Storage
+    type ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage
         when IDim<'Rows>
         and IDim<'Cols>
         and INumberBase<'Scalar>
@@ -54,46 +58,25 @@ module Owned =
             { storage = 'Storage.Create(rows.Dim * cols.Dim); rows = rows; cols = cols }
 
         member self.AtRef(row: int, col: int) =
-            &self.storage.AtRef(row * self.cols.Dim + col)
+            &UnsafeHelper.AsRef<'Storage>(&self.storage).AtRef(row * self.cols.Dim + col)
 
         member self.CoeffRef(row: int, col: int) =
-            &self.storage.CoeffRef(row * self.cols.Dim + col)
+            &UnsafeHelper.AsRef<'Storage>(&self.storage).CoeffRef(row * self.cols.Dim + col)
 
         member self.Rows = self.rows.Dim
         member self.Cols = self.cols.Dim
+        member self.M = MatExp self
 
-        interface IMatrixTarget<ValueMatrixImpl<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
+        interface IMatrixExpression<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
+            member self.DimRows = self.rows
+            member self.DimCols = self.cols
+
+            member self.At(row: int, col: int) = self.AtRef(row, col)
+
+        interface IMatrixTarget<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member self.DimRows = self.rows
             member self.DimCols = self.cols
 
             member self.AtRef(row: int, col: int) = &self.AtRef(row, col)
 
             member self.CoeffRef(row: int, col: int) = &self.CoeffRef(row, col)
-
-    [<Struct>]
-    type ValueMatrixBase<'Self, 'Scalar, 'Rows, 'Cols
-        when IDim<'Rows>
-        and IDim<'Cols>
-        and INumberBase<'Scalar>
-        and IMatrixTarget<'Self, 'Scalar, 'Rows, 'Cols>
-        and 'Self: struct>(mat: 'Self) =
-        member this.M = MatExp this
-
-        member self.AtRef(row: int, col: int) = &mat.AtRef(row, col)
-        member self.CoeffRef(row: int, col: int) = &mat.CoeffRef(row, col)
-        member self.DimRows = mat.DimRows
-        member self.DimCols = mat.DimCols
-
-        interface IMatrixTarget<ValueMatrixBase<'Self, 'Scalar, 'Rows, 'Cols>, 'Scalar, 'Rows, 'Cols> with
-            member __.DimRows = mat.DimRows
-            member __.DimCols = mat.DimCols
-
-            member __.AtRef(row: int, col: int) = &mat.AtRef(row, col)
-
-            member __.CoeffRef(row: int, col: int) = &mat.CoeffRef(row, col)
-
-        interface IMatrixExpression<ValueMatrixBase<'Self, 'Scalar, 'Rows, 'Cols>, 'Scalar, 'Rows, 'Cols> with
-            member __.DimRows = mat.DimRows
-            member __.DimCols = mat.DimCols
-
-            member __.At(row: int, col: int) = mat.AtRef(row, col)
