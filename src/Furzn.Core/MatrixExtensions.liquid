@@ -3,37 +3,19 @@ namespace Furzn.Core
 open System.Runtime.CompilerServices
 open System.Numerics
 
-[<Extension>]
-type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
-    [<Extension>]
-    static member Item(mat: Matrix<'Scalar, 'Rows, D1>, r: int) = &mat.AtRef(r, 0)
-   
-    [<Extension>]
-    static member Coeff(mat: Matrix<'Scalar, 'Rows, D1>, r: int) = &mat.CoeffRef(r, 0)
-    
-    [<Extension>]
-    static member inline SetSlice
-            (
-                mat: Matrix<'Scalar, 'Rows, D1>,
-                startR: option<int>,
-                endR: option<int>,
-                m: MatrixExpression<_, 'Scalar, 'Rows, D1>
-            ) =
-            let mutable mat = mat
-            mat.AssignSlice (startR, endR, None, None, m)
+// {{ "Hello {0} and {1}" | format: "world", 123 }}
 
-    {% for dim in dims %}
-        {% if dim != '1' %}    
+{% macro matAccess(name) %}
     [<Extension>]
-    static member Item(mat: Matrix<'Scalar, 'Rows, D{{dim}}>, r: int, c: int) = &mat.AtRef(r, c)
+    static member Item(mat: {{name}}, r: int, c: int) = &mat.AtRef(r, c)
       
     [<Extension>]
-    static member Coeff(mat: Matrix<'Scalar, 'Rows, D{{dim}}>, r: int, c: int) = &mat.CoeffRef(r, c)
+    static member Coeff(mat: {{name}}, r: int, c: int) = &mat.CoeffRef(r, c)
       
     [<Extension>]
     static member inline SetSlice
         (
-            mat: Matrix<'Scalar, 'Rows, D{{dim}}>,
+            mat: {{name}},
             startR: option<int>,
             endR: option<int>,
             startC: option<int>,
@@ -42,6 +24,36 @@ type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> 
         ) =
             let mutable mat = mat            
             mat.AssignSlice (startR, endR, startC, endC, m)
+{% endmacro %}
 
+{% macro vecAccess(name) %}
+    [<Extension>]
+    static member Item(vec: {{name}}, i: int) = &vec.AtRef(i, 0)
+      
+    [<Extension>]
+    static member Coeff(vec: {{name}}, i: int) = &vec.CoeffRef(i, 0)
+      
+    [<Extension>]
+    static member inline SetSlice
+        (
+            vec: {{name}},
+            startR: option<int>,
+            endR: option<int>,
+            m: MatrixExpression<_, 'Scalar, 'Rows, D{{dim}}>
+        ) =
+            let mutable vec = vec            
+            vec.AssignSlice (startR, endR, None, None, m)
+{% endmacro %}
+
+
+[<Extension>]
+type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
+
+    {% for dim in dims %}
+        {% if dim != '1' %}    
+            {% assign name = "Matrix<'Scalar, 'Rows, D{0}>" | format: dim %} 
+            {{ matAccess(name) }}
+        {% else %}
+            {{ vecAccess("Matrix<'Scalar, 'Rows, D1>") }}    
         {% endif %}
     {% endfor %}
