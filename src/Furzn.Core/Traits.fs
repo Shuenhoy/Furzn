@@ -18,6 +18,7 @@ module Traits =
         abstract member DimCols: 'Cols
         abstract member At: int * int -> 'Scalar
 
+
     [<Struct>]
     type MatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
         when INumberBase<'Scalar>

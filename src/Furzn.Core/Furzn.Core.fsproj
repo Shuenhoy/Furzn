@@ -2,12 +2,17 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>3535</NoWarn>
+    <WarnOn>52</WarnOn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Dims.Generated.fs" />
     <Compile Include="Traits.fs" />
-    <Compile Include="Owned.fs" />
-    <Compile Include="OwnedExtensions.Generated.fs"/>
+    <Compile Include="AssignTarget.fs"/>
+    <Compile Include="Storage.fs" />
+    <Compile Include="MatrixBase.fs" />
+    <Compile Include="Matrix.fs" />
+    <Compile Include="MatrixExtensions.Generated.fs"/>
     <Compile Include="Operations.fs" />
   </ItemGroup>
 

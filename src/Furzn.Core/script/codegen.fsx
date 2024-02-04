@@ -12,7 +12,7 @@ let template = parse.Parse(source)
 let options = TemplateOptions()
 options.MemberAccessStrategy <- UnsafeMemberAccessStrategy.Instance
 
-let dims = (Seq.init 4 (fun i -> sprintf "%d" (i + 1)))
+let dims = [ "1"; "2"; "3"; "4"; "X" ]
 let context = TemplateContext({| dims = dims |}, options)
 
 let result = template.Render(context)

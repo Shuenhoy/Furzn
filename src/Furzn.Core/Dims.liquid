@@ -9,10 +9,12 @@ type IDim<'Self when IDim<'Self>> =
 
 
 {% for dim in dims %}
+    {% if dim != 'X' %}    
 [<Struct>]
 type D{{dim}} =
     interface IDim<D{{dim}}> with
         member _.Dim = {{dim}}
+    {% endif %}
 {% endfor %}
 
 
