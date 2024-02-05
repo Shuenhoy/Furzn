@@ -26,9 +26,6 @@
     <Exec WorkingDirectory="$(ProjectDir)"
       Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.fs" />
   </Target>
-  <Target Name="TextTemplateClean" AfterTargets="Clean">
-    <Delete Files="**\*.Generated.fs" />
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />

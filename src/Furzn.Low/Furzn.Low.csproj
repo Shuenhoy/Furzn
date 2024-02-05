@@ -12,12 +12,8 @@
   <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">
     <Exec WorkingDirectory="$(ProjectDir)"
       Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.cs" />
+    <ItemGroup>
+      <Compile Include="%(TextTemplate.Filename).Generated.cs" Exclude="@(Compile)" />
+    </ItemGroup>
   </Target>
-  <ItemGroup>
-    <Generated Include="**\*.Generated.cs" />
-  </ItemGroup>
-  <Target Name="TextTemplateClean" AfterTargets="Clean">
-    <Delete Files="**\*.Generated.cs" />
-  </Target>
-
 </Project>
