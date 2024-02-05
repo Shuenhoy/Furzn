@@ -36,4 +36,10 @@ jobs:
           echo "::add-path::${{ env.DOTNET_INSTALL_DIR }}"
       - run: dotnet restore --locked-mode -s https://nuget.cdn.azure.cn/v3/index.json
       - run: dotnet build --configuration Release --no-restore
+      - name: Collect Artifacts if failed
+        if: failure() && github.ref == 'refs/heads/main'
+        uses: https://pub.ryon.ren/actions/upload-artifact@v3
+        with:
+          path: |
+            ${{ github.workspace }}
       - run: dotnet test --configuration Release --no-restore
