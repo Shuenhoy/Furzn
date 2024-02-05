@@ -42,4 +42,8 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}
+            !${{ github.workspace }}/.git
+            !${{ github.workspace }}/.nuget
+            !${{ github.workspace }}/.dotnet
+
       - run: dotnet test --configuration Release --no-restore
