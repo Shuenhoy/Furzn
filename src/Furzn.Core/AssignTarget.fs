@@ -2,6 +2,7 @@ namespace Furzn.Core
 
 open System.Runtime.CompilerServices
 open System.Numerics
+open System
 
 
 [<AutoOpen>]
@@ -57,3 +58,26 @@ module AssignTarget =
             let startC = dft startC 0
             let endC = dft endC <| self.DimCols.Dim - 1
             MatrixTargetExtensions.AssignSlice(&self, startR, endR, startC, endC, m)
+
+    let targetToString<'Self, 'Scalar, 'Rows, 'Cols when IMatrixTarget<'Self, 'Scalar, 'Rows, 'Cols>>
+        (target: inref<'Self>)
+        =
+        let sb = Text.StringBuilder()
+
+        Printf.bprintf
+            sb
+            "Matrix<%s, %A, %A>(%s)\n"
+            typeof<'Scalar>.Name
+            target.DimRows.Dim
+            target.DimCols.Dim
+            typeof<'Self>.NiceName
+
+
+        for r in 0 .. target.DimRows.Dim - 1 do
+            for c in 0 .. target.DimCols.Dim - 1 do
+                Printf.bprintf sb "%A" <| target.AtRef(r, c)
+                Printf.bprintf sb " "
+
+            Printf.bprintf sb "\n"
+
+        sb.ToString()

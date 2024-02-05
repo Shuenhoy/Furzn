@@ -25,6 +25,7 @@ module Owned =
         member __.Rows = rows.Dim
         member __.Cols = cols.Dim
         member this.M = MatExp this
+        override self.ToString() = targetToString &self
 
         interface IMatrixTarget<MatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member __.DimRows = rows
@@ -87,6 +88,7 @@ module Owned =
         member self.Rows = self.rows.Dim
         member self.Cols = self.cols.Dim
         member self.M = MatExp <| ValueMatrixUnsafeRef &self
+        override self.ToString() = targetToString &self
 
         interface IMatrixExpression<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member self.DimRows = self.rows

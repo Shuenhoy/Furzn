@@ -6,6 +6,7 @@
     <WarnOn>52</WarnOn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Utils.fs" />
     <Compile Include="Dims.Generated.fs" />
     <Compile Include="Traits.fs" />
     <Compile Include="AssignTarget.fs" />
@@ -20,7 +21,8 @@
     <TextTemplate Include="**\*.liquid" />
   </ItemGroup>
   <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.fs" />
+    <Exec WorkingDirectory="$(ProjectDir)"
+      Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.fs" />
   </Target>
   <Target Name="TextTemplateClean" AfterTargets="Clean">
     <Delete Files="**\*.Generated.fs" />
