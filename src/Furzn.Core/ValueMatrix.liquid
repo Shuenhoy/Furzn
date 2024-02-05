@@ -1,0 +1,28 @@
+{% macro defineVec(dim) %}
+    type Vector{{dim}}<'Scalar when INumberBase<'Scalar>> =
+        ValueMatrixBase<'Scalar, D{{dim}}, D1, InlineStorage{{dim}}<'Scalar>>
+
+    let vector{{dim}}<'Scalar when INumberBase<'Scalar>> () = new Vector{{dim}}<'Scalar>(D{{dim}}(), D1())
+{% endmacro %}
+
+{% macro defineMat(dim1, dim2) %}
+    {% assign len = dim1 | times: dim2 %}
+    type Matrix{{dim1}}x{{dim2}}<'Scalar when INumberBase<'Scalar>> =
+        ValueMatrixBase<'Scalar, D{{dim1}}, D{{dim2}}, InlineStorage{{len}}<'Scalar>>
+
+    let matrix{{dim1}}x{{dim2}}<'Scalar when INumberBase<'Scalar>> () = new Matrix{{dim1}}x{{dim2}}<'Scalar>(D{{dim1}}(), D{{dim2}}())
+{% endmacro %}
+
+namespace Furzn.Core
+open System.Numerics
+
+[<AutoOpen>]
+module ValueMatrix = 
+    {% for dim in dims %}
+        {{ defineVec(dim) }}
+    {% endfor %}
+    {% for dim1 in dims %}
+        {% for dim2 in dims %}
+            {{ defineMat(dim1, dim2) }}
+        {% endfor %}
+    {% endfor %}

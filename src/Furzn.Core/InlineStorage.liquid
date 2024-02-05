@@ -1,0 +1,28 @@
+{% macro defineInlineStorage(len) %}
+    [<Struct>]
+    type InlineStorage{{len}}<'Scalar> =
+        val buffer: InlineArray{{len}}<'Scalar>
+
+        member self.AtRef i =
+            &UnsafeHelper.AsRef<_>(&self.buffer).AtRef i
+
+        member self.CoeffRef i =
+            &UnsafeHelper.AsRef<_>(&self.buffer).CoeffRef i
+
+        new(_) = { buffer = InlineArray{{len}}<_>() }
+
+        interface IStorage<InlineStorage{{len}}<'Scalar>, 'Scalar> with
+            member self.AtRef i = &self.AtRef i
+            member self.CoeffRef i = &self.CoeffRef i
+            member self.Length = {{len}}
+            static member Create _ = new InlineStorage{{len}}<_>({{len}})
+{% endmacro %}
+
+namespace Furzn.Core
+open Furzn.Low
+
+[<AutoOpen>]
+module InlineStorage =
+{% for len in dimlen %}
+    {{ defineInlineStorage(len) }}
+{% endfor %}

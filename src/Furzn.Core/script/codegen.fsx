@@ -13,8 +13,15 @@ let template = parse.Parse(source)
 let options = TemplateOptions()
 options.MemberAccessStrategy <- UnsafeMemberAccessStrategy.Instance
 
-let dims = [ "2"; "3"; "4" ]
-let context = TemplateContext({| dims = dims |}, options)
+let dims = [ 2; 3; 4 ]
+
+let dimlen =
+    Seq.allPairs [ 1..4 ] [ 1..4 ]
+    |> Seq.map (fun (x, y) -> x * y)
+    |> Seq.distinct
+    |> Seq.toList
+
+let context = TemplateContext({| dims = dims; dimlen = dimlen |}, options)
 
 
 let outputs

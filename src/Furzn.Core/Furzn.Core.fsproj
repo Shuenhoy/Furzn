@@ -11,8 +11,10 @@
     <Compile Include="Traits.fs" />
     <Compile Include="AssignTarget.fs" />
     <Compile Include="Storage.fs" />
+    <Compile Include="InlineStorage.Generated.fs" />
     <Compile Include="MatrixBase.fs" />
     <Compile Include="Matrix.fs" />
+    <Compile Include="ValueMatrix.Generated.fs" />
     <Compile Include="MatrixExtensions.Generated.fs" />
     <Compile Include="Operations.fs" />
   </ItemGroup>

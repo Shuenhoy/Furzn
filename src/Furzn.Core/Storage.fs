@@ -5,7 +5,6 @@ open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System
 
-open Furzn.Low
 
 [<AutoOpen>]
 module Storage =
@@ -43,34 +42,3 @@ module Storage =
             member self.CoeffRef i = &self.CoeffRef i
             member self.Length = self.length
             static member Create l = new HeapStorage<_>(l)
-
-    [<Struct; InlineArray(3)>]
-    type TestInlineArray3<'Scalar> =
-        val _elem0: 'Scalar
-
-        static member Create() =
-            Unchecked.defaultof<TestInlineArray3<'Scalar>>
-
-        member self.AtRef(index: int) =
-            &Unsafe.Add<'Scalar>(&UnsafeHelper.AsRef<'Scalar>(&self._elem0), index)
-
-        member self.CoeffRef(index: int) =
-            &Unsafe.Add<'Scalar>(&UnsafeHelper.AsRef<'Scalar>(&self._elem0), index)
-
-    [<Struct>]
-    type InlineStorage3<'Scalar> =
-        val buffer: TestInlineArray3<'Scalar>
-
-        member self.AtRef i =
-            &UnsafeHelper.AsRef<_>(&self.buffer).AtRef i
-
-        member self.CoeffRef i =
-            &UnsafeHelper.AsRef<_>(&self.buffer).CoeffRef i
-
-        new(_) = { buffer = TestInlineArray3<_>.Create() }
-
-        interface IStorage<InlineStorage3<'Scalar>, 'Scalar> with
-            member self.AtRef i = &self.AtRef i
-            member self.CoeffRef i = &self.CoeffRef i
-            member self.Length = 3
-            static member Create _ = new InlineStorage3<_>(3)

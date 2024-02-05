@@ -12,7 +12,12 @@ let template = parse.Parse(source)
 let options = TemplateOptions()
 options.MemberAccessStrategy <- UnsafeMemberAccessStrategy.Instance
 
-let dims = [ 1..16 ]
+let dims =
+    Seq.allPairs [ 1..4 ] [ 1..4 ]
+    |> Seq.map (fun (x, y) -> x * y)
+    |> Seq.distinct
+    |> Seq.toList
+
 let context = TemplateContext({| dims = dims |}, options)
 
 let result = template.Render(context)
