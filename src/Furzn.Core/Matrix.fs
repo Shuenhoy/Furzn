@@ -25,7 +25,7 @@ module Matrix =
     let vectorX<'Scalar when INumberBase<'Scalar>> (dim: int) =
         new Vector<'Scalar, DX>(DX dim, D1())
 
-    let vector3<'Scalar when INumberBase<'Scalar>> () = new Vector3<'Scalar>()
+    let vector3<'Scalar when INumberBase<'Scalar>> () = new Vector3<'Scalar>(D3(), D1())
 
     let matrixX<'Scalar when INumberBase<'Scalar>> (rows: int) (cols: int) =
         new Matrix<'Scalar, DX, DX>(DX rows, DX cols)

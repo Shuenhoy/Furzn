@@ -29,13 +29,6 @@
     static member Coeff(vec: {{type}}, i: int) = &vec.CoeffRef(i, 0)
 {% endmacro %}
 
-{% macro vecAccessConst(type) %}
-    [<Extension>]
-    static member Item(vec: {{type}}, i: int) = &vec.AtRefConst(i, 0)
-      
-    [<Extension>]
-    static member Coeff(vec: {{type}}, i: int) = &vec.CoeffRefConst(i, 0)
-{% endmacro %}
 
 {% macro vecSlice(type, Rows) %}
     [<Extension>]
@@ -46,7 +39,7 @@
             endR: option<int>,
             m: MatrixExpression<_, 'Scalar, {{Rows}}, D1>
         ) =
-            let mutable vec = vec            
+            let vec = &UnsafeHelper.AsRef<_>(&vec)   
             vec.AssignSlice (startR, endR, None, None, m)
 {% endmacro %}
 
@@ -54,11 +47,13 @@ namespace Furzn.Core
 
 open System.Runtime.CompilerServices
 open System.Numerics
+open Furzn.Low
 
 [<Extension>]
 type ValueVectorExtensions<'Scalar when INumberBase<'Scalar>> =
     {% for dim in dims %}
         {% assign type = "inref<ValueMatrixBase<'Scalar, D{0}, D1, _>>" | format: dim %} 
+
         {% assign Rows = "D{0}" | format: dim %}
         {{ vecAccess(type) }}   
         {{ vecSlice(type,  Rows) }} 

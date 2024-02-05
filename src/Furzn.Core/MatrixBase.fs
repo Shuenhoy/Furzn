@@ -2,6 +2,8 @@ namespace Furzn.Core
 
 open System.Numerics
 open System
+open System.Runtime.InteropServices
+open System.Runtime.CompilerServices
 
 open Furzn.Low
 
@@ -41,6 +43,25 @@ module Owned =
 
             member this.At(row: int, col: int) = this.AtRef(row, col)
 
+    [<Struct>]
+    type ValueMatrixUnsafeRef<'Self, 'Scalar, 'Rows, 'Cols
+        when IDim<'Rows>
+        and IDim<'Cols>
+        and INumberBase<'Scalar>
+        and IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols>> =
+        val pointer: voidptr
+
+        new(input: inref<'Self>) =
+            { pointer = Unsafe.AsPointer(&UnsafeHelper.AsRef<'Self>(&input)) }
+
+        member self.Deref = &Unsafe.AsRef<'Self>(self.pointer)
+
+        interface IMatrixExpression<ValueMatrixUnsafeRef<'Self, 'Scalar, 'Rows, 'Cols>, 'Scalar, 'Rows, 'Cols> with
+            member self.DimRows = self.Deref.DimRows
+            member self.DimCols = self.Deref.DimCols
+
+            member self.At(row: int, col: int) = self.Deref.At(row, col)
+
 
 
     [<Struct>]
@@ -65,7 +86,7 @@ module Owned =
 
         member self.Rows = self.rows.Dim
         member self.Cols = self.cols.Dim
-        member self.M = MatExp self
+        member self.M = MatExp <| ValueMatrixUnsafeRef &self
 
         interface IMatrixExpression<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member self.DimRows = self.rows
