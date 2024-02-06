@@ -2,8 +2,13 @@
     <PropertyGroup>
         <BaseOutputPath>..\..\bld\bin\$(MSBuildProjectName)\</BaseOutputPath>
         <BaseIntermediateOutputPath>..\..\bld\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-        <OutDir>..\..\bld\out</OutDir>
+        <OutDir>..\..\bld\out\$(Configuration)</OutDir>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
     </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
+    </ItemGroup>
 </Project>

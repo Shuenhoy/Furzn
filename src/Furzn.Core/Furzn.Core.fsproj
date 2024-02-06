@@ -27,9 +27,6 @@
       Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.fs" />
   </Target>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Furzn.Low\Furzn.Low.csproj" />

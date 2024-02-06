@@ -8,6 +8,13 @@
         "resolved": "8.2.2",
         "contentHash": "+zIp8d3sbtYaRbM6hqDs4Ui/z34j7DcUmleruZlYLE4CVxXq+MO8XJyIs42vzeTYFX+k0Iq1dEbBUnQ4z/Gnrw=="
       },
+      "furzn.core": {
+        "type": "Project",
+        "dependencies": {
+          "CommunityToolkit.HighPerformance": "[8.2.2, )",
+          "Furzn.Low": "[1.0.0, )"
+        }
+      },
       "furzn.low": {
         "type": "Project",
         "dependencies": {
