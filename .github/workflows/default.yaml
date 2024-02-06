@@ -45,7 +45,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           dotnet pack src/Furzn/Furzn.fsproj --configuration Release
-          dotnet nuget push bld/bin/Furzn/Release/*.nupkg --source https://ryon.ren/api/packages/${{ github.repository_owner }}/nuget/index.json --api-key ${{ github.token }}
+          dotnet nuget push bld/bin/Furzn/Release/*.nupkg --source https://ryon.ren/api/packages/${{ github.repository_owner }}/nuget/index.json --api-key ${{ secrets.NUGET_TOKEN }}
       - name: Collect Artifacts if failed
         if: failure() && github.ref == 'refs/heads/main'
         uses: https://pub.ryon.ren/actions/upload-artifact@v3
