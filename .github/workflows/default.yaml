@@ -24,7 +24,6 @@ jobs:
           path: ${{ env.DOTNET_INSTALL_DIR }}
           key: dotnet-${{ runner.os }}-8.0.x
       - name: Cache Nuget Packages
-        id: cache-nuget-packages
         uses: https://pub.ryon.ren/actions/cache@v3
         with:
           path: ${{ env.NUGET_PACKAGES }}
@@ -38,7 +37,6 @@ jobs:
         run: |
           echo "::add-path::${{ env.DOTNET_INSTALL_DIR }}"
       - name: Restore
-        if: steps.cache-nuget-packages.outputs.cache-hit != 'true'
         run: dotnet restore --locked-mode -s https://nuget.cdn.azure.cn/v3/index.json
       - run: dotnet build --configuration Release --no-restore
 
