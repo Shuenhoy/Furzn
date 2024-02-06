@@ -1,46 +1,46 @@
 {% macro matAccess(type) %}
-    [<Extension>]
-    static member Item(mat: {{type}}, r: int, c: int) = &mat.AtRef(r, c)
+        [<Extension>]
+        static member Item(mat: {{type}}, r: int, c: int) = &mat.AtRef(r, c)
       
-    [<Extension>]
-    static member Coeff(mat: {{type}}, r: int, c: int) = &mat.CoeffRef(r, c)
+        [<Extension>]
+        static member Coeff(mat: {{type}}, r: int, c: int) = &mat.CoeffRef(r, c)
 {% endmacro %}
 
 {% macro matSetSlice(type, Rows, Cols) %}
-    [<Extension>]
-    static member inline SetSlice
-        (
-            mat: {{type}},
-            startR: option<int>,
-            endR: option<int>,
-            startC: option<int>,
-            endC: option<int>,
-            m: MatrixExpression<_, 'Scalar, {{Rows}}, {{Cols}}>
-        ) =
-            let mutable mat = mat            
-            mat.AssignSlice (startR, endR, startC, endC, m)
+        [<Extension>]
+        static member inline SetSlice
+            (
+                mat: {{type}},
+                startR: option<int>,
+                endR: option<int>,
+                startC: option<int>,
+                endC: option<int>,
+                m: MatrixExpression<_, 'Scalar, {{Rows}}, {{Cols}}>
+            ) =
+                let mutable mat = mat            
+                mat.AssignSlice (startR, endR, startC, endC, m)
 {% endmacro %}
 
 {% macro vecAccess(type) %}
-    [<Extension>]
-    static member Item(vec: {{type}}, i: int) = &vec.AtRef(i, 0)
+        [<Extension>]
+        static member Item(vec: {{type}}, i: int) = &vec.AtRef(i, 0)
       
-    [<Extension>]
-    static member Coeff(vec: {{type}}, i: int) = &vec.CoeffRef(i, 0)
+        [<Extension>]
+        static member Coeff(vec: {{type}}, i: int) = &vec.CoeffRef(i, 0)
 {% endmacro %}
 
 
 {% macro vecSlice(type, Rows) %}
-    [<Extension>]
-    static member inline SetSlice
-        (
-            vec: {{type}},
-            startR: option<int>,
-            endR: option<int>,
-            m: MatrixExpression<_, 'Scalar, {{Rows}}, D1>
-        ) =
-            let vec = &UnsafeHelper.AsRef<_>(&vec)   
-            vec.AssignSlice (startR, endR, None, None, m)
+        [<Extension>]
+        static member inline SetSlice
+            (
+                vec: {{type}},
+                startR: option<int>,
+                endR: option<int>,
+                m: MatrixExpression<_, 'Scalar, {{Rows}}, D1>
+            ) =
+                let vec = &UnsafeHelper.AsRef<_>(&vec)   
+                vec.AssignSlice (startR, endR, None, None, m)
 {% endmacro %}
 
 namespace Furzn.Core
@@ -49,27 +49,29 @@ open System.Runtime.CompilerServices
 open System.Numerics
 open Furzn.Low
 
-[<Extension>]
-type ValueVectorExtensions<'Scalar when INumberBase<'Scalar>> =
-    {% for dim in dims %}
-        {% assign type = "inref<ValueMatrixBase<'Scalar, D{0}, D1, _>>" | format: dim %} 
+[<AutoOpen>]
+module MatrixExtensions =
+    [<Extension>]
+    type ValueVectorExtensions =
+        {% for dim in dims %}
+            {% assign type = "inref<ValueMatrixBase<_, D{0}, D1, _>>" | format: dim %} 
 
-        {% assign Rows = "D{0}" | format: dim %}
-        {{ vecAccess(type) }}   
-        {{ vecSlice(type,  Rows) }} 
-    {% endfor %}
+            {% assign Rows = "D{0}" | format: dim %}
+            {{ vecAccess(type) }}   
+            {{ vecSlice(type,  Rows) }} 
+        {% endfor %}
 
-[<Extension>]
-type MatrixExtensions<'Scalar, 'Rows when INumberBase<'Scalar> and IDim<'Rows>> =
-    {{ vecAccess("Matrix<'Scalar, 'Rows, D1>") }}   
-    {{ vecSlice("Matrix<'Scalar, 'Rows, D1>", "'Rows") }} 
+    [<Extension>]
+    type MatrixExtensions =
+        {{ vecAccess("Matrix<_, _, D1>") }}   
+        {{ vecSlice("Matrix<_, _, D1>", "_") }} 
 
-    {% for dim in dims %}
-        {% assign type = "Matrix<'Scalar, 'Rows, D{0}>" | format: dim %} 
-        {{ matAccess(type) }}
-        {% assign Cols = "D{0}" | format: dim %}
-        {{ matSetSlice(type, "'Rows", Cols) }}
-    {% endfor %}
+        {% for dim in dims %}
+            {% assign type = "Matrix<_, _, D{0}>" | format: dim %} 
+            {{ matAccess(type) }}
+            {% assign Cols = "D{0}" | format: dim %}
+            {{ matSetSlice(type, "_", Cols) }}
+        {% endfor %}
 
-    {{ matAccess("Matrix<'Scalar, 'Rows, DX>") }}
-    {{ matSetSlice("Matrix<'Scalar, 'Rows, DX>", "'Rows", "DX") }}
+        {{ matAccess("Matrix<_, _, DX>") }}
+        {{ matSetSlice("Matrix<_, _, DX>", "_", "DX") }}
