@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
 env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   DOTNET_CONSOLE_ANSI_COLOR: true
@@ -34,7 +36,9 @@ jobs:
       - name: Set PATH
         run: |
           echo "::add-path::${{ env.DOTNET_INSTALL_DIR }}"
-      - run: dotnet restore --locked-mode -s https://nuget.cdn.azure.cn/v3/index.json
+      - name: Restore
+        if: steps.cache-nuget-packages.outputs.cache-hit != 'true'
+        run: dotnet restore --locked-mode -s https://nuget.cdn.azure.cn/v3/index.json
       - run: dotnet build --configuration Release --no-restore
       - name: Collect Artifacts if failed
         if: failure() && github.ref == 'refs/heads/main'
@@ -47,3 +51,8 @@ jobs:
             !${{ github.workspace }}/.dotnet
 
       - run: dotnet test --configuration Release --no-restore
+      - name: Push Nuget Packages
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          dotnet pack src/Furzn/Furzn.fsproj --configuration Release --no-restore
+          dotnet nuget push bld/bin/Furzn/Release/*.nupkg --source https://ryon.ren/api/packages/${{ github.repository_owner }}/nuget/index.json --api-key ${{ github.token }}
