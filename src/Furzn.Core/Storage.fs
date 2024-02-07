@@ -32,7 +32,8 @@ module Storage =
             self.CoeffRef i
 #endif
         member self.CoeffRef i = &uncheckedIndexRef self.buffer.Span i
-
+        member self.Length = self.buffer.Length
+        static member Create l = new HeapStorage<_>(l)
 
         interface IDisposable with
             member self.Dispose() = self.buffer.Dispose()

@@ -43,6 +43,8 @@ module Owned =
         member internal __.Storage = &storage
         member __.Rows = _rows.Dim
         member __.Cols = _cols.Dim
+        member __.DimRows = _rows
+        member __.DimCols = _cols
         member this.M = MatExp this
 
         member __.Shape = struct (_rows.Dim, _cols.Dim)
