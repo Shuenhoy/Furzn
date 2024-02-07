@@ -17,19 +17,40 @@ module Owned =
         and INumberBase<'Scalar>
         and IStorage<'Storage, 'Scalar>
         and 'Storage :> IDisposable>(rows: 'Rows, cols: 'Cols) =
-        let storage = 'Storage.Create(rows.Dim * cols.Dim)
+        let mutable storage = 'Storage.Create(rows.Dim * cols.Dim)
+        let mutable _rows = rows
+        let mutable _cols = cols
 
-        member __.AtRef(row: int, col: int) = &storage.AtRef(row * cols.Dim + col)
-        member __.CoeffRef(row: int, col: int) = &storage.CoeffRef(row * cols.Dim + col)
+        member __.AtRef(row: int, col: int) = &storage.AtRef(row * _cols.Dim + col)
 
-        member __.Rows = rows.Dim
-        member __.Cols = cols.Dim
+        member __.CoeffRef(row: int, col: int) =
+            &storage.CoeffRef(row * _cols.Dim + col)
+
+        member __.Reserve(size: int) =
+            if size > storage.Length then
+                let newStorage = 'Storage.Create(size)
+
+                storage.Span.CopyTo(newStorage.Span)
+
+                storage.Dispose()
+                storage <- newStorage
+
+        member self.Resize(rows: 'Rows, cols: 'Cols) =
+            _rows <- rows
+            _cols <- cols
+            self.Reserve(rows.Dim * cols.Dim)
+
+        member internal __.Storage = &storage
+        member __.Rows = _rows.Dim
+        member __.Cols = _cols.Dim
         member this.M = MatExp this
+
+        member __.Shape = struct (_rows.Dim, _cols.Dim)
         override self.ToString() = targetToString &self
 
         interface IMatrixTarget<MatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
-            member __.DimRows = rows
-            member __.DimCols = cols
+            member __.DimRows = _rows
+            member __.DimCols = _cols
 
             member self.AtRef(row: int, col: int) = &self.AtRef(row, col)
 
@@ -39,8 +60,8 @@ module Owned =
             member __.Dispose() = storage.Dispose()
 
         interface IMatrixExpression<MatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
-            member __.DimRows = rows
-            member __.DimCols = cols
+            member __.DimRows = _rows
+            member __.DimCols = _cols
 
             member this.At(row: int, col: int) = this.AtRef(row, col)
 
@@ -78,6 +99,8 @@ module Owned =
 
         new(rows: 'Rows, cols: 'Cols) =
             { storage = 'Storage.Create(rows.Dim * cols.Dim); rows = rows; cols = cols }
+
+        member this.Shape = struct (this.rows.Dim, this.cols.Dim)
 
         member self.AtRef(row: int, col: int) =
             &UnsafeHelper.AsRef<'Storage>(&self.storage).AtRef(row * self.cols.Dim + col)

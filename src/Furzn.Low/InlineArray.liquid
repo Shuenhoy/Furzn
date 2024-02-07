@@ -1,6 +1,7 @@
 ﻿namespace Furzn.Low;
 
 using System.Runtime.CompilerServices;
+using System;
 
 {% for dim in dims %}
 [System.Runtime.CompilerServices.InlineArray({{dim}})]
@@ -25,6 +26,9 @@ public static class InlineArrayExtensions
     }
     public static ref T CoeffRef<T>(ref this InlineArray{{dim}}<T> self, int index) {
         return ref Unsafe.Add(ref self._element, index);
+    }
+    public static Span<T> CreateSpan<T>(ref this InlineArray{{dim}}<T> self) {
+        return self[..];
     }
 {% endfor %}
     

@@ -8,13 +8,13 @@ type IDim<'Self when IDim<'Self>> =
     abstract member Dim: int
 
 [<Struct>]
-type D1 =
+type D1 = | D1 with
     interface IDim<D1> with
         member _.Dim = 1
 
 {% for dim in dims %}
 [<Struct>]
-type D{{dim}} =
+type D{{dim}} = | D{{dim}} with
     interface IDim<D{{dim}}> with
         member _.Dim = {{dim}}
 {% endfor %}

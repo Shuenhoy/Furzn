@@ -9,12 +9,16 @@
         member self.CoeffRef i =
             &UnsafeHelper.AsRef<_>(&self.buffer).CoeffRef i
 
+        member self.Span =
+            UnsafeHelper.AsRef<_>(&self.buffer).CreateSpan()
+
         new(_) = { buffer = InlineArray{{len}}<_>() }
 
         interface IStorage<InlineStorage{{len}}<'Scalar>, 'Scalar> with
             member self.AtRef i = &self.AtRef i
             member self.CoeffRef i = &self.CoeffRef i
             member self.Length = {{len}}
+            member self.Span = self.Span
             static member Create _ = new InlineStorage{{len}}<_>({{len}})
 {% endmacro %}
 

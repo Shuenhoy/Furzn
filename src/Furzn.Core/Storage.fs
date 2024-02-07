@@ -16,14 +16,14 @@ module Storage =
     type IStorage<'Self, 'Scalar> =
         abstract member AtRef: int -> byref<'Scalar>
         abstract member CoeffRef: int -> byref<'Scalar>
+        abstract member Span: Span<'Scalar>
         abstract member Length: int
         static abstract member Create: int -> 'Self
 
     [<Struct>]
     type HeapStorage<'Scalar> =
         val buffer: MemoryOwner<'Scalar>
-        val length: int
-        new(length: int) = { buffer = MemoryOwner<'Scalar>.Allocate(length); length = length }
+        new(length: int) = { buffer = MemoryOwner<'Scalar>.Allocate(length) }
 
         member self.AtRef i =
 #if DEBUG
@@ -33,12 +33,13 @@ module Storage =
 #endif
         member self.CoeffRef i = &uncheckedIndexRef self.buffer.Span i
 
+
         interface IDisposable with
             member self.Dispose() = self.buffer.Dispose()
 
         interface IStorage<HeapStorage<'Scalar>, 'Scalar> with
-
+            member self.Span = self.buffer.Span
             member self.AtRef i = &self.AtRef i
             member self.CoeffRef i = &self.CoeffRef i
-            member self.Length = self.length
+            member self.Length = self.buffer.Length
             static member Create l = new HeapStorage<_>(l)
