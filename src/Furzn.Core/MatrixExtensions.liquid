@@ -43,6 +43,13 @@
                 vec.AssignSlice (startR, endR, None, None, m)
 {% endmacro %}
 
+{% macro defineVecAccess(dim, name, Index) %}
+        [<Extension>]
+        static member inline {{ name }} (v: inref<Vector{{dim}}d>) = v[{{Index}}]
+        static member inline {{ name }} (v: inref<Vector{{dim}}i>) = v[{{Index}}]
+
+{% endmacro %}
+
 namespace Furzn.Core
 
 open System.Runtime.CompilerServices
@@ -60,7 +67,18 @@ module MatrixExtensions =
             {{ vecAccess(type) }}   
             {{ vecSlice(type,  Rows) }} 
         {% endfor %}
-
+    
+    [<Extension>]
+    type VectorAccessExtensions =
+        {{defineVecAccess(2, 'X', 0)}}
+        {{defineVecAccess(2, 'Y', 1)}}
+        {{defineVecAccess(3, 'X', 0)}}
+        {{defineVecAccess(3, 'Y', 1)}}
+        {{defineVecAccess(3, 'Z', 2)}}
+        {{defineVecAccess(4, 'X', 0)}}
+        {{defineVecAccess(4, 'Y', 1)}}
+        {{defineVecAccess(4, 'Z', 2)}}
+        {{defineVecAccess(4, 'W', 3)}}
     [<Extension>]
     type MatrixExtensions =
         {{ vecAccess("Matrix<_, _, D1>") }}   

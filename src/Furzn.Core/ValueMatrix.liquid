@@ -2,6 +2,9 @@
     type Vector{{dim}}<'Scalar when INumberBase<'Scalar>> =
         ValueMatrixBase<'Scalar, D{{dim}}, D1, InlineStorage{{dim}}<'Scalar>>
 
+    type Vector{{dim}}d = Vector{{dim}}<double>
+    type Vector{{dim}}i = Vector{{dim}}<int>
+
     let vector{{dim}}<'Scalar when INumberBase<'Scalar>> () = new Vector{{dim}}<'Scalar>(D{{dim}}, D1)
 {% endmacro %}
 
@@ -10,8 +13,13 @@
     type Matrix{{dim1}}x{{dim2}}<'Scalar when INumberBase<'Scalar>> =
         ValueMatrixBase<'Scalar, D{{dim1}}, D{{dim2}}, InlineStorage{{len}}<'Scalar>>
 
+    type Matrix{{dim1}}x{{dim2}}d = Matrix{{dim1}}x{{dim2}}<double>
+    type Matrix{{dim1}}x{{dim2}}i = Matrix{{dim1}}x{{dim2}}<int>
+
     let matrix{{dim1}}x{{dim2}}<'Scalar when INumberBase<'Scalar>> () = new Matrix{{dim1}}x{{dim2}}<'Scalar>(D{{dim1}}, D{{dim2}})
 {% endmacro %}
+
+
 
 namespace Furzn.Core
 open System.Numerics
@@ -26,3 +34,5 @@ module ValueMatrix =
             {{ defineMat(dim1, dim2) }}
         {% endfor %}
     {% endfor %}
+
+    
