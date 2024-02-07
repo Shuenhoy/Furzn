@@ -50,7 +50,7 @@ module Matrix =
     type MatrixExtensions =
 
         [<Extension>]
-        static member AppendRow(mat: byref<Matrix<_, DX, _>>) =
+        static member AppendRow(mat: Matrix<_, DX, _>) =
             if mat.Rows * mat.Cols + mat.Cols > mat.Storage.Length then
                 let newLength = max 1.0 (sqrt (double mat.Storage.Length)) |> ceil |> int
                 mat.Reserve(newLength * newLength)
@@ -59,14 +59,13 @@ module Matrix =
 
 
         [<Extension>]
-        static member inline Resize(mat: byref<MatrixX<_>>, rows: int, cols) =
-            mat.Resize(DX rows, DX cols)
+        static member inline Resize(mat: MatrixX<_>, rows: int, cols) = mat.Resize(DX rows, DX cols)
 
         [<Extension>]
-        static member inline Resize(mat: byref<MatrixX2<_>>, rows: int) = mat.Resize(DX rows, D2)
+        static member inline Resize(mat: MatrixX2<_>, rows: int) = mat.Resize(DX rows, D2)
 
         [<Extension>]
-        static member inline Resize(mat: byref<MatrixX3<_>>, rows: int) = mat.Resize(DX rows, D3)
+        static member inline Resize(mat: MatrixX3<_>, rows: int) = mat.Resize(DX rows, D3)
 
         [<Extension>]
-        static member inline Resize(mat: byref<MatrixX4<_>>, rows: int) = mat.Resize(DX rows, D4)
+        static member inline Resize(mat: MatrixX4<_>, rows: int) = mat.Resize(DX rows, D4)
