@@ -17,10 +17,9 @@ module Traits =
         abstract member DimRows: 'Rows
         abstract member DimCols: 'Cols
         abstract member At: int * int -> 'Scalar
+        abstract member M: MatrixExpression<'Self, 'Scalar, 'Rows, 'Cols>
 
-
-    [<Struct>]
-    type MatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
+    and [<Struct>] MatrixExpression<'Self, 'Scalar, 'Rows, 'Cols
         when INumberBase<'Scalar>
         and IDim<'Rows>
         and IDim<'Cols>

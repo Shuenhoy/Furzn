@@ -12,6 +12,7 @@
     <Compile Include="AssignTarget.fs" />
     <Compile Include="Storage.fs" />
     <Compile Include="InlineStorage.Generated.fs" />
+    <Compile Include="View.fs" />
     <Compile Include="MatrixBase.fs" />
     <Compile Include="Matrix.fs" />
     <Compile Include="ValueMatrix.Generated.fs" />

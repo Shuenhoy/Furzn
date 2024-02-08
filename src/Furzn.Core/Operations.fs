@@ -47,6 +47,7 @@ module Operations =
         interface IMatrixExpression<CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, 'Op>, 'Scalar, 'Rows, 'Cols> with
             member __.DimRows = a.DimRows
             member __.DimCols = a.DimCols
+            member self.M = MatExp self
 
             member __.At(row: int, col: int) =
                 'Op.Apply (a.At(row, col)) (b.At(row, col))
@@ -79,6 +80,7 @@ module Operations =
         interface IMatrixExpression<ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, 'Op>, 'Scalar, 'Rows, 'Cols> with
             member __.DimRows = m.DimRows
             member __.DimCols = m.DimCols
+            member self.M = MatExp self
 
             member __.At(row: int, col: int) = 'Op.Apply (m.At(row, col)) s
 

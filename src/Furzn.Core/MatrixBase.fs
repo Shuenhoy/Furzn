@@ -45,7 +45,7 @@ module Owned =
         member __.Cols = _cols.Dim
         member __.DimRows = _rows
         member __.DimCols = _cols
-        member this.M = MatExp this
+        member self.M = MatExp self
 
         member __.Shape = struct (_rows.Dim, _cols.Dim)
         override self.ToString() = targetToString &self
@@ -65,14 +65,15 @@ module Owned =
             member __.DimRows = _rows
             member __.DimCols = _cols
 
-            member this.At(row: int, col: int) = this.AtRef(row, col)
+            member self.At(row: int, col: int) = self.AtRef(row, col)
+            member self.M = MatExp self
 
     [<Struct>]
     type ValueMatrixUnsafeRef<'Self, 'Scalar, 'Rows, 'Cols
         when IDim<'Rows>
         and IDim<'Cols>
         and INumberBase<'Scalar>
-        and IMatrixExpression<'Self, 'Scalar, 'Rows, 'Cols>> =
+        and IMatrixTarget<'Self, 'Scalar, 'Rows, 'Cols>> =
         val pointer: voidptr
 
         new(input: inref<'Self>) =
@@ -84,12 +85,12 @@ module Owned =
             member self.DimRows = self.Deref.DimRows
             member self.DimCols = self.Deref.DimCols
 
-            member self.At(row: int, col: int) = self.Deref.At(row, col)
+            member self.At(row: int, col: int) = self.Deref.AtRef(row, col)
+            member self.M = MatExp self
 
 
 
-    [<Struct>]
-    type ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage
+    and [<Struct>] ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage
         when IDim<'Rows>
         and IDim<'Cols>
         and INumberBase<'Scalar>
@@ -112,14 +113,9 @@ module Owned =
 
         member self.Rows = self.rows.Dim
         member self.Cols = self.cols.Dim
-        member self.M = MatExp <| ValueMatrixUnsafeRef &self
+        member self.Ref = ValueMatrixUnsafeRef &self
+        member self.M = MatExp self.Ref
         override self.ToString() = targetToString &self
-
-        interface IMatrixExpression<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
-            member self.DimRows = self.rows
-            member self.DimCols = self.cols
-
-            member self.At(row: int, col: int) = self.AtRef(row, col)
 
         interface IMatrixTarget<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member self.DimRows = self.rows
