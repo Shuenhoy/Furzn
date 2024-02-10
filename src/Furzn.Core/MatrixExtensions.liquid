@@ -17,7 +17,6 @@
                 endC: option<int>,
                 m: MatrixExpression<_, 'Scalar, {{Rows}}, {{Cols}}>
             ) =
-                let mutable mat = mat            
                 mat.AssignSlice (startR, endR, startC, endC, m)
 {% endmacro %}
 
@@ -39,7 +38,6 @@
                 endR: option<int>,
                 m: MatrixExpression<_, 'Scalar, {{Rows}}, D1>
             ) =
-                let vec = &UnsafeHelper.AsRef<_>(&vec)   
                 vec.AssignSlice (startR, endR, None, None, m)
 {% endmacro %}
 

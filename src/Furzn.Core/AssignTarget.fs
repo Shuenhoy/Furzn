@@ -3,6 +3,7 @@ namespace Furzn.Core
 open System.Runtime.CompilerServices
 open System.Numerics
 open System
+open Furzn.Low
 
 
 [<AutoOpen>]
@@ -17,6 +18,7 @@ module AssignTarget =
         abstract member DimCols: 'Cols
         abstract member AtRef: int * int -> byref<'Scalar>
         abstract member CoeffRef: int * int -> byref<'Scalar>
+
 
     [<Extension>]
     type MatrixTargetExtensions<'Self, 'Scalar, 'Rows, 'Cols
@@ -41,7 +43,7 @@ module AssignTarget =
         [<Extension>]
         static member inline AssignSlice
             (
-                self: byref<'Self>,
+                self: inref<'Self>,
                 startR: Option<int>,
                 endR: Option<int>,
                 startC: Option<int>,
@@ -57,7 +59,15 @@ module AssignTarget =
             let endR = dft endR <| self.DimRows.Dim - 1
             let startC = dft startC 0
             let endC = dft endC <| self.DimCols.Dim - 1
-            MatrixTargetExtensions.AssignSlice(&self, startR, endR, startC, endC, m)
+
+            MatrixTargetExtensions.AssignSlice(
+                &UnsafeHelper.AsRef<'Self>(&self),
+                startR,
+                endR,
+                startC,
+                endC,
+                m
+            )
 
     let targetToString<'Self, 'Scalar, 'Rows, 'Cols when IMatrixTarget<'Self, 'Scalar, 'Rows, 'Cols>>
         (target: inref<'Self>)

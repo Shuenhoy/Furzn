@@ -9,7 +9,14 @@ open Furzn.Low
 
 [<AutoOpen>]
 module Owned =
+    [<Interface>]
+    type IMatrixBase<'Self, 'Scalar, 'Rows, 'Cols
+        when IMatrixBase<'Self, 'Scalar, 'Rows, 'Cols>
+        and INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>> =
 
+        static abstract member Create: 'Rows * 'Cols -> 'Self
 
     type MatrixBase<'Scalar, 'Rows, 'Cols, 'Storage
         when IDim<'Rows>
@@ -57,6 +64,10 @@ module Owned =
             member self.AtRef(row: int, col: int) = &self.AtRef(row, col)
 
             member self.CoeffRef(row: int, col: int) = &self.CoeffRef(row, col)
+
+        interface IMatrixBase<MatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
+            static member Create(rows: 'Rows, cols: 'Cols) =
+                new MatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>(rows, cols)
 
         interface IDisposable with
             member __.Dispose() = storage.Dispose()
@@ -116,6 +127,10 @@ module Owned =
         member self.Ref = ValueMatrixUnsafeRef &self
         member self.M = MatExp self.Ref
         override self.ToString() = targetToString &self
+
+        interface IMatrixBase<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
+            static member Create(rows: 'Rows, cols: 'Cols) =
+                new ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>(rows, cols)
 
         interface IMatrixTarget<ValueMatrixBase<'Scalar, 'Rows, 'Cols, 'Storage>, 'Scalar, 'Rows, 'Cols> with
             member self.DimRows = self.rows
