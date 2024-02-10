@@ -37,20 +37,19 @@ module Operations =
         and IDim<'Cols>
         and IMatrixExpression<'A, 'Scalar, 'Rows, 'Cols>
         and IMatrixExpression<'B, 'Scalar, 'Rows, 'Cols>
-        and 'Op :> BinaryOp<'Scalar>>
-        (
-            a: MatrixExpression<'A, 'Scalar, 'Rows, 'Cols>,
-            b: MatrixExpression<'B, 'Scalar, 'Rows, 'Cols>
-        ) =
+        and 'Op :> BinaryOp<'Scalar>> =
+        val a: 'A
+        val b: 'B
+        new(MatExp a, MatExp b) = { a = a; b = b }
         static member inline create a b = MatExp <| CwiseBinaryOp(a, b)
 
         interface IMatrixExpression<CwiseBinaryOp<'Scalar, 'A, 'B, 'Rows, 'Cols, 'Op>, 'Scalar, 'Rows, 'Cols> with
-            member __.DimRows = a.DimRows
-            member __.DimCols = a.DimCols
+            member self.DimRows = self.a.DimRows
+            member self.DimCols = self.a.DimCols
             member self.M = MatExp self
 
-            member __.At(row: int, col: int) =
-                'Op.Apply (a.At(row, col)) (b.At(row, col))
+            member self.At(row: int, col: int) =
+                'Op.Apply (self.a.At(row, col)) (self.b.At(row, col))
 
     type MatAdd<'Scalar, 'A, 'B, 'Rows, 'Cols
         when INumberBase<'Scalar>
@@ -74,15 +73,17 @@ module Operations =
         and IDim<'Rows>
         and IDim<'Cols>
         and IMatrixExpression<'M, 'Scalar, 'Rows, 'Cols>
-        and 'Op :> BinaryOp<'Scalar>>(m: MatrixExpression<'M, 'Scalar, 'Rows, 'Cols>, s: 'Scalar) =
-        static member inline create m s = MatExp <| ScalarCwiseOp(m, s)
+        and 'Op :> BinaryOp<'Scalar>> =
+        val m: 'M
+        val s: 'Scalar
+        new(MatExp m, s) = { m = m; s = s }
 
         interface IMatrixExpression<ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, 'Op>, 'Scalar, 'Rows, 'Cols> with
-            member __.DimRows = m.DimRows
-            member __.DimCols = m.DimCols
+            member self.DimRows = self.m.DimRows
+            member self.DimCols = self.m.DimCols
             member self.M = MatExp self
 
-            member __.At(row: int, col: int) = 'Op.Apply (m.At(row, col)) s
+            member self.At(row: int, col: int) = 'Op.Apply (self.m.At(row, col)) self.s
 
     type MatScalarMul<'Scalar, 'M, 'Rows, 'Cols
         when INumberBase<'Scalar>

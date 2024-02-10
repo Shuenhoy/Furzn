@@ -22,5 +22,6 @@ type D{{dim}} = | D{{dim}} with
 
 [<Struct>]
 type DX(dim: int) =
+    member _.Dim = dim
     interface IDim<DX> with
         member _.Dim = dim

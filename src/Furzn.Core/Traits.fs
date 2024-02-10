@@ -30,13 +30,6 @@ module Traits =
             match __ with
             | MatExp x -> x
 
-        member inline __.DimRows = __.unwrap.DimRows
-        member inline __.DimCols = __.unwrap.DimCols
-        member inline __.Rows = __.unwrap.DimRows.Dim
-        member inline __.Cols = __.unwrap.DimCols.Dim
-
-        member __.At(row: int, col: int) = __.unwrap.At(row, col)
-
     type IVectorExpression<'Self, 'Scalar, 'Rows
         when IDim<'Rows> and INumberBase<'Scalar> and IVectorExpression<'Self, 'Scalar, 'Rows>> =
         IMatrixExpression<'Self, 'Scalar, 'Rows, D1>

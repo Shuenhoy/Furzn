@@ -35,7 +35,7 @@ module AssignTarget =
             ) =
             for r in startR..endR do
                 for c in startC..endC do
-                    self.AtRef(r, c) <- m.At(r - startR, c - startC)
+                    self.AtRef(r, c) <- m.unwrap.At(r - startR, c - startC)
 
 
         [<Extension>]
