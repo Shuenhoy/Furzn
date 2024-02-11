@@ -100,6 +100,22 @@ module Operations =
         ScalarCwiseOp<'Scalar, 'M, 'Rows, 'Cols, Division<'Scalar>>
 
     [<Struct>]
+    type MatTranspose<'Scalar, 'M, 'Rows, 'Cols
+        when INumberBase<'Scalar>
+        and IDim<'Rows>
+        and IDim<'Cols>
+        and IMatrixExpression<'M, 'Scalar, 'Rows, 'Cols>> =
+        val m: 'M
+        new(MatExp m) = { m = m }
+
+        interface IMatrixExpression<MatTranspose<'Scalar, 'M, 'Rows, 'Cols>, 'Scalar, 'Cols, 'Rows> with
+            member self.DimRows = self.m.DimCols
+            member self.DimCols = self.m.DimRows
+            member self.M = MatExp self
+
+            member self.At(row: int, col: int) = self.m.At(col, row)
+
+    [<Struct>]
     type AddHelper =
         | AddHelper
 
@@ -159,3 +175,9 @@ module Operations =
         static member inline (?<-)(DivHelper, a, b) = a / b
 
     let inline (/) a b = (?<-) DivHelper a b
+
+    [<Extension>]
+    type UnaryExtensions =
+        [<Extension>]
+        static member Transpose(a: MatrixExpression<_, 'Scalar, 'Rows, 'Cols>) =
+            MatExp <| MatTranspose(a)

@@ -30,6 +30,8 @@ module View =
                 colOffset = colOffset
             }
 
+        member self.M = MatExp self
+
         interface IMatrixTarget<MatrixSliceView<'Self, 'Scalar, 'Rows, 'Cols, 'SliceRows, 'SliceCols>, 'Scalar, 'SliceRows, 'SliceCols> with
             member self.DimRows = self.sliceRows
             member self.DimCols = self.sliceCols
@@ -60,7 +62,7 @@ module View =
 
             member self.DimRows = self.sliceRows
             member self.DimCols = self.sliceCols
-            member self.M = MatExp self
+            member self.M = self.M
 
     [<Extension>]
     type MatrixTargetExtensions =
