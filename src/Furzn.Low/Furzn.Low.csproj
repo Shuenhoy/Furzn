@@ -9,7 +9,8 @@
   <ItemGroup>
     <TextTemplate Include="**\*.liquid" />
   </ItemGroup>
-  <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">
+  <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild" Inputs="%(TextTemplate.Identity)"
+    Outputs="%(TextTemplate.Filename).Generated.cs">
     <Exec WorkingDirectory="$(ProjectDir)"
       Command="dotnet fsi $(ProjectDir)/script/codegen.fsx %(TextTemplate.Identity) %(TextTemplate.Filename).Generated.cs" />
     <ItemGroup>
