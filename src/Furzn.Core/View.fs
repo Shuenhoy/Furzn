@@ -74,3 +74,12 @@ module View =
                 row: int
             ) =
             MatrixSliceView(self, D1, self.DimCols, row, 0)
+
+        [<Extension>]
+        static member inline Col<'Self, 'Scalar, 'Rows, 'Cols
+            when IMatrixTarget<'Self, 'Scalar, 'Rows, 'Cols>>
+            (
+                self: 'Self,
+                col: int
+            ) =
+            MatrixSliceView(self, self.DimRows, D1, 0, col)

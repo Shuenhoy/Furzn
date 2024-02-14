@@ -128,7 +128,7 @@ module Operations =
 
         static member inline (?<-)(AddHelper, a, b) = a + b
 
-    let inline (+) a b = (?<-) AddHelper a b
+    let inline (+.) a b = (?<-) AddHelper a b
 
     [<Struct>]
     type SubHelper =
@@ -143,7 +143,7 @@ module Operations =
 
         static member inline (?<-)(SubHelper, a, b) = a - b
 
-    let inline (-) a b = (?<-) SubHelper a b
+    let inline (-.) a b = (?<-) SubHelper a b
 
     [<Struct>]
     type MulHelper =
@@ -160,7 +160,7 @@ module Operations =
 
         static member inline (?<-)(MulHelper, a, b) = a * b
 
-    let inline (*) a b = (?<-) MulHelper a b
+    let inline ( *. ) a b = (?<-) MulHelper a b
 
     [<Struct>]
     type DivHelper =
@@ -174,10 +174,27 @@ module Operations =
 
         static member inline (?<-)(DivHelper, a, b) = a / b
 
-    let inline (/) a b = (?<-) DivHelper a b
+    let inline (/.) a b = (?<-) DivHelper a b
 
     [<Extension>]
     type UnaryExtensions =
         [<Extension>]
         static member Transpose(a: MatrixExpression<_, 'Scalar, 'Rows, 'Cols>) =
             MatExp <| MatTranspose(a)
+
+        [<Extension>]
+        static member MinMaxCoeff(a: MatrixExpression<_, 'Scalar, 'Rows, 'Cols>) =
+            let mutable min = a.unwrap.At(0, 0)
+            let mutable max = a.unwrap.At(0, 0)
+
+            for r in 0 .. a.DimRows.Dim - 1 do
+                for c in 0 .. a.DimCols.Dim - 1 do
+                    let v = a.unwrap.At(r, c)
+
+                    if v < min then
+                        min <- v
+
+                    if v > max then
+                        max <- v
+
+            (min, max)
